@@ -73,6 +73,16 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <div id="role-badge" class="px-3 py-1.5 rounded-xl text-xs font-bold hidden bg-slate-800 border border-white/10 text-slate-400"></div>
+            <button onclick="toggleLoginModal()" id="login-btn" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center gap-1.5">
+                🔑 Вход
+            </button>
+            <button onclick="toggleAdminToolbar()" id="admin-toolbar-btn" class="hidden px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold border border-amber-500/30 transition flex items-center gap-1.5">
+                ✏️ Режим правки
+            </button>
+            <button onclick="logout()" id="logout-btn" class="hidden px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/10 transition">
+                Выйти
+            </button>
             <button onclick="toggleGridModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/10 transition flex items-center gap-1.5">
                 <span>☷</span> Все 200 слайдов
             </button>
@@ -118,6 +128,132 @@
             </button>
         </div>
     </footer>
+
+    <!-- Modal for Login / Roles -->
+    <div id="login-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 hidden flex-col items-center justify-center p-6">
+        <div class="w-full max-w-sm bg-slate-900 border border-white/10 rounded-2xl p-8 shadow-2xl">
+            <div class="flex items-center justify-center mb-6">
+                <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-3xl">🐢</div>
+            </div>
+            <h2 class="text-xl font-bold text-white text-center font-display mb-2">Вход в систему</h2>
+            <p class="text-sm text-slate-400 text-center mb-6">Выберите роль или войдите как администратор</p>
+
+            <button onclick="loginAs('user')" class="w-full mb-3 px-4 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold text-sm hover:bg-emerald-500/25 transition flex items-center gap-3">
+                <span class="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center text-lg">👤</span>
+                <div class="text-left">
+                    <div class="font-bold">Ученик</div>
+                    <div class="text-[11px] text-slate-400">Просмотр слайдов без редактирования</div>
+                </div>
+            </button>
+
+            <button onclick="showPasswordForm()" id="admin-btn" class="w-full px-4 py-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-semibold text-sm hover:bg-amber-500/25 transition flex items-center gap-3">
+                <span class="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center text-lg">🔐</span>
+                <div class="text-left">
+                    <div class="font-bold">Администратор</div>
+                    <div class="text-[11px] text-slate-400">Полный доступ к редактированию слайдов</div>
+                </div>
+            </button>
+
+            <div id="password-form" class="hidden mt-4">
+                <div class="flex gap-2">
+                    <input type="password" id="admin-password" placeholder="Введите пароль администратора"
+                        class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500/50"
+                        onkeydown="if(event.key==='Enter') loginAsAdmin()">
+                    <button onclick="loginAsAdmin()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition">Войти</button>
+                </div>
+                <p id="login-error" class="text-rose-400 text-xs mt-2 hidden">Неверный пароль. Попробуйте ещё раз.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Toolbar Panel -->
+    <div id="admin-toolbar" class="fixed top-20 right-6 z-40 hidden bg-slate-900/95 backdrop-blur-xl border border-amber-500/30 rounded-2xl p-5 shadow-2xl max-w-xs max-h-[80vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-amber-300 uppercase tracking-wider">🔐 Админ-панель</h3>
+            <button onclick="toggleAdminToolbar()" class="text-slate-400 hover:text-white text-lg">×</button>
+        </div>
+
+        <!-- Управление порядком слайдов -->
+        <div class="mb-4 pb-4 border-b border-white/10">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wide mb-2">Порядок слайдов</h4>
+            <div class="flex gap-2 mb-2">
+                <button onclick="moveSlideUp()" class="flex-1 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition">↑ Выше</button>
+                <button onclick="moveSlideDown()" class="flex-1 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition">↓ Ниже</button>
+            </div>
+            <div class="text-[10px] text-slate-500">Перемещение текущего слайда в массиве</div>
+        </div>
+
+        <!-- Выбор визуализации -->
+        <div class="mb-4 pb-4 border-b border-white/10">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wide mb-2">Картинка справа (визуал)</h4>
+            <select id="vis-selector" onchange="changeSlideVis(this.value)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-white/10 text-white text-xs focus:outline-none focus:border-indigo-500">
+                <option value="">— Авто / без изменения —</option>
+                <option value="course_cover">Обложка курса</option>
+                <option value="intro_turtle">Черепашка (стартовая)</option>
+                <option value="line_step">Линия (вперёд)</option>
+                <option value="square_step">Квадрат</option>
+                <option value="triangle_step">Треугольник</option>
+                <option value="compass">Компас углов</option>
+                <option value="seq_shapes">Парад фигур</option>
+                <option value="traffic_light">Светофор</option>
+                <option value="house">Домик</option>
+                <option value="snowman">Снеговик</option>
+                <option value="polygon_hex">Шестиугольник</option>
+                <option value="star5">Звезда 5 лучей</option>
+                <option value="rosette">Розетка из квадратов</option>
+                <option value="rainbow_spiral">Радужная спираль</option>
+                <option value="cyan_spiral">Бирюзовая спираль</option>
+                <option value="star_spiral">Звёздный вихрь</option>
+                <option value="coords_grid">Сетка координат</option>
+                <option value="constellation">Созвездие</option>
+                <option value="target_rings">Мишень (кольца)</option>
+                <option value="smiley">Смайлик</option>
+                <option value="pixel_sword">Пиксельный меч</option>
+                <option value="pixel_heart">Пиксельное сердце</option>
+                <option value="trees_func">Деревья (функции)</option>
+                <option value="starry_sky">Звёздное небо (random)</option>
+                <option value="crescent_moon">Полумесяц</option>
+                <option value="night_city">Ночной город</option>
+                <option value="fireworks_show">Салют</option>
+                <option value="rgb_circles">RGB круги</option>
+                <option value="gradient_bar">Градиент (полоса)</option>
+                <option value="neon_tunnel">Неоновый туннель</option>
+                <option value="crystal_121">Кристалл 121°</option>
+                <option value="neon_lotus">Неоновый лотос</option>
+                <option value="bubbles_art">Мыльные пузыри</option>
+                <option value="Interactive_keys">Клавиши управления</option>
+                <option value="race_game">Гонка черепашек</option>
+                <option value="catch_turtle">Поймай черепашку</option>
+                <option value="mirror_turtles">Зеркальные черепашки</option>
+                <option value="turtle_stamps">Штампы черепашек</option>
+                <option value="space_rockets">Космические ракеты</option>
+                <option value="project_showcase">Витрина проектов</option>
+            </select>
+        </div>
+
+        <!-- Рисование мышью -->
+        <div class="mb-4">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wide mb-2">Рисование поверх слайда</h4>
+            <button onclick="toggleDrawMode()" id="draw-mode-btn" class="w-full px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition mb-2">
+                🎨 Включить рисование мышью
+            </button>
+            <div id="draw-tools" class="hidden space-y-2">
+                <div class="flex gap-2">
+                    <input type="color" id="draw-color" value="#22d3ee" class="w-12 h-8 rounded border border-white/10 bg-slate-800 cursor-pointer">
+                    <input type="range" id="draw-size" min="2" max="20" value="5" class="flex-1">
+                    <span id="draw-size-label" class="text-xs text-slate-400 w-8 text-right">5px</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="clearCanvas()" class="flex-1 px-2 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold border border-rose-500/30 transition">🗑️ Очистить</button>
+                    <button onclick="saveCanvasAsPNG()" class="flex-1 px-2 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition">💾 PNG</button>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="saveSlideEdits()" class="w-full px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition shadow-lg">
+            💾 Сохранить и выйти из правки
+        </button>
+    </div>
 
     <!-- Modal for 200 Slides Overview -->
     <div id="grid-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 hidden flex-col p-6 md:p-10">
@@ -1589,11 +1725,390 @@ document.addEventListener('keydown', (e) => {
     } else if (e.key === 'Escape') {
         const modal = document.getElementById('grid-modal');
         if (!modal.classList.contains('hidden')) toggleGridModal();
+        const login = document.getElementById('login-modal');
+        if (!login.classList.contains('hidden') && currentRole !== 'guest') toggleLoginModal();
     }
 });
 
 // Initialize on load
 renderSlide(0);
+
+// ============================================================================
+// СИСТЕМА РОЛЕЙ (user / admin) И РЕЖИМ РЕДАКТИРОВАНИЯ СЛАЙДОВ
+// ============================================================================
+// Пароль администратора хранится в зашифрованном (base64) виде,
+// чтобы в исходнике он не встречался в явном виде.
+const ADMIN_PASSWORD_HASH = 'cXdlZHNh'; // base64-шифр пароля (сравнивается с btoa(введённого))
+
+let currentRole = 'guest';   // guest | user | admin
+let editMode = false;
+
+// При старте проверяем роль и показываем окно входа
+toggleLoginModal();
+
+function toggleLoginModal() {
+    const modal = document.getElementById('login-modal');
+    if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.getElementById('login-error').classList.add('hidden');
+    } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function showPasswordForm() {
+    document.getElementById('password-form').classList.remove('hidden');
+    document.getElementById('admin-password').focus();
+}
+
+function loginAs(role) {
+    currentRole = role;
+    updateRoleUI();
+    toggleLoginModal();
+}
+
+function loginAsAdmin() {
+    const input = document.getElementById('admin-password').value;
+    if (btoa(input) === ADMIN_PASSWORD_HASH) {
+        currentRole = 'admin';
+        updateRoleUI();
+        toggleLoginModal();
+        document.getElementById('admin-password').value = '';
+    } else {
+        document.getElementById('login-error').classList.remove('hidden');
+    }
+}
+
+function logout() {
+    currentRole = 'guest';
+    editMode = false;
+    updateRoleUI();
+    renderSlide(currentSlideIndex);
+}
+
+function updateRoleUI() {
+    const badge = document.getElementById('role-badge');
+    const loginBtn = document.getElementById('login-btn');
+    const adminBtn = document.getElementById('admin-toolbar-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (currentRole === 'admin') {
+        badge.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 border border-amber-500/30 text-amber-300';
+        badge.innerText = '🔐 Администратор';
+        badge.classList.remove('hidden');
+        loginBtn.classList.add('hidden');
+        adminBtn.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
+    } else if (currentRole === 'user') {
+        badge.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300';
+        badge.innerText = '👤 Ученик';
+        badge.classList.remove('hidden');
+        loginBtn.classList.add('hidden');
+        adminBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+        loginBtn.classList.remove('hidden');
+        adminBtn.classList.add('hidden');
+        logoutBtn.classList.add('hidden');
+    }
+}
+
+function toggleAdminToolbar() {
+    editMode = !editMode;
+    const toolbar = document.getElementById('admin-toolbar');
+    const btn = document.getElementById('admin-toolbar-btn');
+    
+    if (editMode) {
+        toolbar.classList.remove('hidden');
+        btn.innerText = '✕ Выйти из режима правки';
+        btn.className = 'px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold border border-rose-500/30 transition flex items-center gap-1.5';
+        renderSlideWithEdit(currentSlideIndex);
+    } else {
+        toolbar.classList.add('hidden');
+        btn.innerText = '✏️ Режим правки';
+        btn.className = 'px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold border border-amber-500/30 transition flex items-center gap-1.5';
+        renderSlide(currentSlideIndex);
+    }
+}
+
+// ============================================================================
+// РЕДАКТИРОВАНИЕ ТЕКУЩЕГО СЛАЙДА (только для роли admin в режиме editMode)
+// ============================================================================
+function saveSlideEdits() {
+    const s = slidesData[currentSlideIndex];
+    const titleEl = document.querySelector('[data-edit="title"]');
+    const subEl = document.querySelector('[data-edit="sub"]');
+    const tagEl = document.querySelector('[data-edit="tag"]');
+    const descEl = document.querySelector('[data-edit="desc"]');
+    const codeEl = document.querySelector('[data-edit="code"]');
+    const bulletsEls = document.querySelectorAll('[data-edit="bullet"]');
+    const stepsEls = document.querySelectorAll('[data-edit="step"]');
+    
+    if (titleEl) s.title = titleEl.innerText.trim();
+    if (subEl && s.sub !== undefined) s.sub = subEl.innerText.trim();
+    if (tagEl && s.tag !== undefined) s.tag = tagEl.innerText.trim();
+    if (descEl && s.desc !== undefined) s.desc = descEl.innerText.trim();
+    if (codeEl && s.code !== undefined) s.code = codeEl.value;
+    
+    // Обновляем bullets если они редактировались
+    if (bulletsEls.length > 0 && s.bullets) {
+        bulletsEls.forEach((el, idx) => {
+            if (s.bullets[idx]) {
+                s.bullets[idx] = [el.innerText.trim(), s.bullets[idx][1]];
+            }
+        });
+    }
+    
+    // Обновляем steps если они редактировались
+    if (stepsEls.length > 0 && s.steps) {
+      stepsEls.forEach((el, idx) => {
+            if (s.steps[idx]) {
+                s.steps[idx] = el.innerText.trim();
+            }
+        });
+    }
+    
+    editMode = false;
+    toggleAdminToolbar();
+    populateGridModal();
+}
+
+function moveSlideUp() {
+    if (currentSlideIndex > 0) {
+        slidesData.splice(currentSlideIndex - 1, 0, slidesData.splice(currentSlideIndex, 1)[0]);
+        currentSlideIndex--;
+        renderSlide(currentSlideIndex);
+        populateGridModal();
+    }
+}
+
+function moveSlideDown() {
+    if (currentSlideIndex < slidesData.length - 1) {
+        slidesData.splice(currentSlideIndex + 1, 0, slidesData.splice(currentSlideIndex, 1)[0]);
+        currentSlideIndex++;
+        renderSlide(currentSlideIndex);
+        populateGridModal();
+    }
+}
+
+function changeSlideVis(visType) {
+    if (!visType) return;
+    slidesData[currentSlideIndex].vis = visType;
+    renderSlide(currentSlideIndex);
+}
+
+// Canvas для рисования мышью
+let drawingCanvas = null;
+let drawCtx = null;
+let isDrawing = false;
+let drawModeActive = false;
+
+function toggleDrawMode() {
+    drawModeActive = !drawModeActive;
+    const btn = document.getElementById('draw-mode-btn');
+    const tools = document.getElementById('draw-tools');
+    
+    if (drawModeActive) {
+        btn.innerText = '🎨 Выключить рисование';
+        btn.className = 'w-full px-3 py-2 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold border border-rose-500/30 transition mb-2';
+        tools.classList.remove('hidden');
+        initDrawCanvas();
+    } else {
+        btn.innerText = '🎨 Включить рисование мышью';
+        btn.className = 'w-full px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition mb-2';
+        tools.classList.add('hidden');
+        removeDrawCanvas();
+    }
+}
+
+function initDrawCanvas() {
+    const container = document.getElementById('slide-container');
+    const rect = container.getBoundingClientRect();
+    
+    removeDrawCanvas();
+    
+    drawingCanvas = document.createElement('canvas');
+    drawingCanvas.id = 'drawing-overlay';
+    drawingCanvas.width = rect.width;
+    drawingCanvas.height = rect.height;
+    drawingCanvas.style.position = 'absolute';
+    drawingCanvas.style.top = '0';
+    drawingCanvas.style.left = '0';
+    drawingCanvas.style.pointerEvents = 'none';
+    drawingCanvas.style.zIndex = '40';
+    drawingCanvas.className = 'rounded-3xl';
+    
+    container.appendChild(drawingCanvas);
+    drawCtx = drawingCanvas.getContext('2d');
+    drawCtx.lineCap = 'round';
+    drawCtx.lineJoin = 'round';
+    
+    attachDrawHandlers();
+}
+
+function removeDrawCanvas() {
+    if (drawingCanvas) {
+        drawingCanvas.remove();
+        drawingCanvas = null;
+        drawCtx = null;
+    }
+}
+
+function attachDrawHandlers() {
+    const container = document.getElementById('slide-container');
+    
+    container.addEventListener('mousedown', startDraw);
+    container.addEventListener('mousemove', draw);
+    container.addEventListener('mouseup', stopDraw);
+    container.addEventListener('mouseleave', stopDraw);
+    
+    // Touch support
+    container.addEventListener('touchstart', handleTouch);
+    container.addEventListener('touchmove', handleTouch);
+    container.addEventListener('touchend', stopDraw);
+}
+
+function getDrawColor() {
+    return document.getElementById('draw-color').value;
+}
+
+function getDrawSize() {
+    const size = parseInt(document.getElementById('draw-size').value);
+    document.getElementById('draw-size-label').innerText = size + 'px';
+    return size;
+}
+
+function startDraw(e) {
+    if (!drawModeActive || e.target.tagName === 'CANVAS') return;
+    isDrawing = true;
+    drawCtx.beginPath();
+    const pos = getMousePos(e);
+    drawCtx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const pos = getMousePos(e);
+    drawCtx.lineTo(pos.x, pos.y);
+    drawCtx.strokeStyle = getDrawColor();
+    drawCtx.lineWidth = getDrawSize();
+    drawCtx.stroke();
+}
+
+function stopDraw() {
+    isDrawing = false;
+}
+
+function getMousePos(e) {
+    const rect = drawingCanvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+function handleTouch(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    drawingCanvas.dispatchEvent(mouseEvent);
+}
+
+function clearCanvas() {
+    if (drawCtx) {
+        drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    }
+}
+
+function saveCanvasAsPNG() {
+    if (!drawingCanvas) return;
+    const link = document.createElement('a');
+    link.download = `slide-${currentSlideIndex + 1}-annotated.png`;
+    link.href = drawingCanvas.toDataURL('image/png');
+    link.click();
+}
+
+function renderSlideWithEdit(index) {
+    _origRenderSlide(index);
+    if (currentRole !== 'admin' || !editMode) return;
+    
+    const container = document.getElementById('slide-inner');
+    const s = slidesData[index];
+    
+    // Делаем редактируемыми все текстовые элементы
+    container.querySelectorAll('h1, h2, .font-display').forEach(el => {
+        el.contentEditable = 'true';
+        el.dataset.edit = 'title';
+        el.classList.add('outline', 'outline-dashed', 'outline-amber-500/50', 'rounded', 'px-1', 'hover:bg-white/[0.03]', 'cursor-text');
+    });
+    
+    // Подзаголовки и описания
+    container.querySelectorAll('p.text-lg, p.text-base').forEach(el => {
+        if ((s.sub && el.innerText.includes(s.sub.slice(0, 20))) || 
+            (s.desc && el.innerText.includes(s.desc.slice(0, 20)))) {
+            el.contentEditable = 'true';
+            el.dataset.edit = el.innerText.includes(s.sub?.slice(0, 20)) ? 'sub' : 'desc';
+            el.classList.add('outline', 'outline-dashed', 'outline-amber-500/50', 'rounded', 'px-1', 'hover:bg-white/[0.03]', 'cursor-text');
+        }
+    });
+    
+    // Теги (мелкие подписи сверху)
+    container.querySelectorAll('.text-xs.font-mono.uppercase').forEach(el => {
+        if (s.tag && el.innerText.trim() === s.tag) {
+            el.contentEditable = 'true';
+            el.dataset.edit = 'tag';
+            el.classList.add('outline', 'outline-dashed', 'outline-amber-500/50', 'rounded', 'px-1', 'hover:bg-white/[0.03]', 'cursor-text');
+        }
+    });
+    
+    // Bullets (теория)
+    container.querySelectorAll('.p-4.rounded-2xl.bg-slate-900\/75 h3').forEach((el, idx) => {
+        if (s.bullets && s.bullets[idx]) {
+            el.contentEditable = 'true';
+            el.dataset.edit = 'bullet';
+            el.classList.add('outline', 'outline-dashed', 'outline-amber-500/50', 'rounded', 'px-1', 'hover:bg-white/[0.03]', 'cursor-text');
+        }
+    });
+    
+    // Steps (задания)
+    container.querySelectorAll('.p-4.rounded-2xl.bg-indigo-950\/40 p').forEach((el, idx) => {
+        if (s.steps && s.steps[idx]) {
+            el.contentEditable = 'true';
+            el.dataset.edit = 'step';
+            el.classList.add('outline', 'outline-dashed', 'outline-amber-500/50', 'rounded', 'px-1', 'hover:bg-white/[0.03]', 'cursor-text');
+        }
+    });
+    
+    // Код Python → textarea
+    const pre = container.querySelector('pre code');
+    if (pre && s.code !== undefined) {
+        const wrapper = pre.closest('pre');
+        const ta = document.createElement('textarea');
+        ta.value = s.code;
+        ta.dataset.edit = 'code';
+        ta.spellcheck = false;
+        ta.className = 'w-full min-h-[200px] max-h-96 bg-slate-950 text-slate-100 font-mono text-xs sm:text-sm leading-relaxed outline outline-dashed outline-amber-500/50 rounded p-3 focus:outline-solid focus:outline-emerald-500 resize-none overflow-auto';
+        wrapper.replaceWith(ta);
+    }
+}
+
+// Переопределяем оригинальную renderSlide, чтобы она учитывала режим правки
+const _origRenderSlide = renderSlide;
+renderSlide = function(index) {
+    _origRenderSlide(index);
+    if (currentRole === 'admin' && editMode) {
+        renderSlideWithEdit(index);
+    }
+};
 </script>
 </body>
 </html>
