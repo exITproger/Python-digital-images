@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Turtle: 8 Занятий (200 Слайдов)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            overflow: hidden;
+            user-select: none;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Comfortaa', cursive;
+        }
+        code, pre, .font-mono {
+            font-family: 'Fira Code', monospace;
+        }
+        .slide-card {
+            background: radial-gradient(circle at top right, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95));
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .code-window {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.4);
+        }
+        .canvas-box {
+            background-color: #0f172a;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Custom scrollbar for slide overview */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between p-4 md:p-6 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
+
+    <!-- Top Navigation Bar -->
+    <header class="flex items-center justify-between px-6 py-3 rounded-2xl bg-slate-900/80 border border-white/10 backdrop-blur-md z-20">
+        <div class="flex items-center gap-4">
+            <div id="lesson-badge" class="px-3.5 py-1.5 rounded-xl font-display font-bold text-xs uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Занятие 1
+            </div>
+            <div id="slide-category" class="text-slate-400 text-sm font-medium hidden sm:block">
+                Знакомство с Черепашкой
+            </div>
+        </div>
+
+        <!-- Lesson Quick Jump Tabs -->
+        <div class="flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-white/5 overflow-x-auto max-w-md md:max-w-2xl">
+            <button onclick="jumpToLesson(0)" id="tab-0" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Интро</button>
+            <button onclick="jumpToLesson(1)" id="tab-1" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Урок 1</button>
+            <button onclick="jumpToLesson(2)" id="tab-2" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Урок 2</button>
+            <button onclick="jumpToLesson(3)" id="tab-3" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Урок 3</button>
+            <button onclick="jumpToLesson(4)" id="tab-4" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Урок 4</button>
+            <button onclick="jumpToLesson(5)" id="tab-5" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Урок 5</button>
+            <button onclick="jumpToLesson(6)" id="tab-6" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Урок 6</button>
+            <button onclick="jumpToLesson(7)" id="tab-7" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Урок 7</button>
+            <button onclick="jumpToLesson(8)" id="tab-8" class="lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold transition-all">Урок 8 🏆</button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button onclick="toggleGridModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/10 transition flex items-center gap-1.5">
+                <span>☷</span> Все 200 слайдов
+            </button>
+            <div id="slide-counter" class="font-mono text-sm font-bold text-white bg-slate-800/90 px-3.5 py-1.5 rounded-xl border border-white/10">
+                001 / 200
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Slide Stage -->
+    <main class="flex-1 my-4 relative flex items-center justify-center overflow-hidden">
+        <div id="slide-container" class="slide-card w-full h-full max-w-7xl rounded-3xl p-6 md:p-10 flex flex-col justify-between relative overflow-hidden transition-all duration-200">
+            <!-- Dynamic Decorative Glow -->
+            <div id="bg-glow" class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+            <div id="bg-glow-2" class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+
+            <!-- Slide Content Injected by JS -->
+            <div id="slide-inner" class="w-full h-full flex flex-col justify-center z-10"></div>
+        </div>
+    </main>
+
+    <!-- Bottom Control Bar -->
+    <footer class="flex items-center justify-between px-6 py-3 rounded-2xl bg-slate-900/80 border border-white/10 backdrop-blur-md z-20">
+        <div class="flex items-center gap-2">
+            <button onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-semibold text-sm transition flex items-center gap-2 border border-white/10">
+                ← Назад
+            </button>
+            <button onclick="nextSlide()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold text-sm transition flex items-center gap-2 shadow-lg shadow-indigo-500/25">
+                Вперёд →
+            </button>
+        </div>
+
+        <div class="flex-1 mx-6 hidden md:block">
+            <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden p-0.5 border border-white/5">
+                <div id="progress-bar" class="bg-gradient-to-r from-emerald-400 via-indigo-400 to-purple-500 h-full rounded-full transition-all duration-200" style="width: 0.5%"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 text-xs text-slate-400">
+            <span class="hidden sm:inline">Клавиши: <b>←</b> <b>→</b> или <b>Пробел</b></span>
+            <button onclick="toggleFullScreen()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10" title="Во весь экран">
+                ⛶
+            </button>
+        </div>
+    </footer>
+
+    <!-- Modal for 200 Slides Overview -->
+    <div id="grid-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 hidden flex-col p-6 md:p-10">
+        <div class="flex items-center justify-between pb-6 border-b border-white/10">
+            <div>
+                <h2 class="text-2xl font-bold text-white font-display">Карта курса: 200 слайдов (8 занятий)</h2>
+                <p class="text-sm text-slate-400 mt-1">Нажмите на любой слайд для мгновенного перехода</p>
+            </div>
+            <button onclick="toggleGridModal()" class="px-4 py-2 rounded-xl bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 font-bold text-sm">
+                ✕ Закрыть (Esc)
+            </button>
+        </div>
+        <div id="slides-grid-list" class="flex-1 overflow-y-auto py-6 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+<script>
+// ============================================================================
+// ГЕНЕРАТОР ВИЗУАЛЬНЫХ СХЕМ И РИСУНКОВ ЧЕРЕПАШКИ (SVG ENGINE)
+// ============================================================================
+function renderVisual(visType) {
+    const w = 360, h = 300;
+    const center = `cx="${w/2}" cy="${h/2}"`;
+    
+    const turtleIcon = (x, y, angle=0, color="#10b981") => `
+        <g transform="translate(${x}, ${y}) rotate(${angle})">
+            <circle r="9" fill="${color}" stroke="#ffffff" stroke-width="2"/>
+            <polygon points="14,0 5,-6 5,6" fill="#ffffff"/>
+        </g>
+    `;
+
+    switch(visType) {
+        case 'course_cover':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <defs>
+                    <linearGradient id="covGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#10b981"/>
+                        <stop offset="50%" stop-color="#38bdf8"/>
+                        <stop offset="100%" stop-color="#a855f7"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="180" cy="145" r="105" fill="none" stroke="url(#covGrad)" stroke-width="3" stroke-dasharray="8 6"/>
+                <polygon points="180,55 260,195 100,195" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="3"/>
+                <rect x="135" y="100" width="90" height="90" fill="rgba(168,85,247,0.12)" stroke="#a855f7" stroke-width="3" rx="10" transform="rotate(15 180 145)"/>
+                <circle cx="180" cy="145" r="35" fill="rgba(16,185,129,0.2)" stroke="#10b981" stroke-width="3"/>
+                ${turtleIcon(180, 145, -45, "#10b981")}
+                <text x="180" y="278" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="bold" font-family="Fira Code">PYTHON • DIGITAL ART • TURTLE</text>
+            </svg>`;
+
+        case 'intro_turtle':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="180" cy="150" r="95" fill="none" stroke="#334155" stroke-dasharray="6 6" stroke-width="2"/>
+                <rect x="110" y="80" width="140" height="140" fill="rgba(16,185,129,0.12)" stroke="#10b981" stroke-width="4" rx="8"/>
+                ${turtleIcon(250, 80, -90, "#10b981")}
+                <text x="180" y="265" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="Fira Code">turtle.Turtle() 🐢</text>
+            </svg>`;
+
+        case 'snowman':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="70" cy="60" r="2" fill="#ffffff"/><circle cx="290" cy="80" r="2.5" fill="#ffffff"/>
+                <circle cx="90" cy="200" r="2" fill="#ffffff"/><circle cx="275" cy="190" r="2" fill="#ffffff"/>
+                <!-- 3 snowballs -->
+                <circle cx="180" cy="215" r="52" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+                <circle cx="180" cy="140" r="38" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+                <circle cx="180" cy="82" r="26" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+                <!-- Eyes & carrot nose -->
+                <circle cx="171" cy="75" r="3.5" fill="#0f172a"/>
+                <circle cx="189" cy="75" r="3.5" fill="#0f172a"/>
+                <circle cx="180" cy="84" r="6" fill="#f97316"/>
+                <!-- Buttons -->
+                <circle cx="180" cy="128" r="4" fill="#334155"/>
+                <circle cx="180" cy="148" r="4" fill="#334155"/>
+                ${turtleIcon(180, 84, 90, "#f97316")}
+            </svg>`;
+
+        case 'multi_polygons':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <!-- Pentagon (5) -->
+                <polygon points="65,110 103,138 88,183 42,183 27,138" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="3"/>
+                <text x="65" y="212" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="bold">5 сторон</text>
+                <!-- Hexagon (6) -->
+                <polygon points="180,108 216,129 216,171 180,192 144,171 144,129" fill="rgba(74,222,128,0.2)" stroke="#4ade80" stroke-width="3"/>
+                <text x="180" y="212" text-anchor="middle" fill="#4ade80" font-size="11" font-weight="bold">6 сторон</text>
+                <!-- Octagon (8) -->
+                <polygon points="280,110 308,110 328,130 328,158 308,178 280,178 260,158 260,130" fill="rgba(244,114,182,0.2)" stroke="#f472b6" stroke-width="3"/>
+                <text x="294" y="212" text-anchor="middle" fill="#f472b6" font-size="11" font-weight="bold">8 сторон</text>
+            </svg>`;
+
+        case 'cyan_spiral':
+            let cLines = '';
+            let ccx = 180, ccy = 150, cang = 0;
+            for(let i=1; i<=26; i++) {
+                let len = i * 4.5;
+                let nx = ccx + Math.cos(cang * Math.PI / 180) * len;
+                let ny = ccy + Math.sin(cang * Math.PI / 180) * len;
+                cLines += `<line x1="${ccx}" y1="${ccy}" x2="${nx}" y2="${ny}" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/>`;
+                ccx = nx; ccy = ny; cang += 89;
+            }
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${cLines}</svg>`;
+
+        case 'star_spiral':
+            const stCols = ["#ec4899", "#22d3ee", "#facc15", "#4ade80"];
+            let stLines = '';
+            let scx = 180, scy = 155, sang = 0;
+            for(let i=1; i<=28; i++) {
+                let len = i * 5.2;
+                let nx = scx + Math.cos(sang * Math.PI / 180) * len;
+                let ny = scy + Math.sin(sang * Math.PI / 180) * len;
+                stLines += `<line x1="${scx}" y1="${scy}" x2="${nx}" y2="${ny}" stroke="${stCols[i%4]}" stroke-width="2.5" stroke-linecap="round"/>`;
+                scx = nx; scy = ny; sang += 145;
+            }
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${stLines}</svg>`;
+
+        case 'constellation':
+            const pts = [[45, 95], [105, 82], [155, 115], [205, 130], [220, 190], [300, 180], [315, 120]];
+            let pLines = '';
+            for(let i=0; i<pts.length-1; i++) {
+                pLines += `<line x1="${pts[i][0]}" y1="${pts[i][1]}" x2="${pts[i+1][0]}" y2="${pts[i+1][1]}" stroke="#22d3ee" stroke-width="2.5"/>`;
+            }
+            let pDots = pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="#facc15" stroke="#ffffff" stroke-width="1.5"/>`).join('');
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${pLines}${pDots}<text x="180" y="255" text-anchor="middle" fill="#38bdf8" font-size="13" font-family="Fira Code">Большая Медведица (7 звёзд)</text></svg>`;
+
+        case 'pixel_heart':
+            const hCoords = [
+                [0, 50],
+                [-25, 25], [0, 25], [25, 25],
+                [-50, 0], [-25, 0], [0, 0], [25, 0], [50, 0],
+                [-25, -25], [25, -25]
+            ];
+            let hRects = hCoords.map(([hx, hy]) => `<rect x="${168 + hx}" y="${130 + hy}" width="24" height="24" fill="#ec4899" stroke="#831843" stroke-width="2"/>`).join('');
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${hRects}<text x="180" y="245" text-anchor="middle" fill="#f472b6" font-size="14" font-weight="bold" font-family="Fira Code">100 HP ❤️</text></svg>`;
+
+        case 'starry_sky':
+            const sList = [
+                [60, 60, 14, "#facc15"], [140, 45, 10, "#ffffff"], [260, 70, 18, "#22d3ee"],
+                [90, 140, 12, "#fde047"], [200, 120, 20, "#facc15"], [290, 150, 12, "#ffffff"],
+                [55, 210, 16, "#22d3ee"], [155, 205, 14, "#facc15"], [245, 215, 18, "#fde047"]
+            ];
+            let sPolys = sList.map(([sx, sy, sr, scol]) => `<circle cx="${sx}" cy="${sy}" r="${sr/2}" fill="${scol}"/><line x1="${sx-sr}" y1="${sy}" x2="${sx+sr}" y2="${sy}" stroke="${scol}" stroke-width="2"/><line x1="${sx}" y1="${sy-sr}" x2="${sx}" y2="${sy+sr}" stroke="${scol}" stroke-width="2"/>`).join('');
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${sPolys}<text x="180" y="270" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Fira Code">40 случайных звёзд (random)</text></svg>`;
+
+        case 'crescent_moon':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="180" cy="145" r="65" fill="#facc15"/>
+                <circle cx="206" cy="130" r="60" fill="#0f172a"/>
+                <circle cx="85" cy="80" r="3" fill="#ffffff"/>
+                <circle cx="285" cy="200" r="3.5" fill="#fde047"/>
+                <circle cx="110" cy="215" r="2.5" fill="#ffffff"/>
+                <text x="180" y="265" text-anchor="middle" fill="#facc15" font-size="13" font-family="Fira Code">Два круга со сдвигом = Полумесяц!</text>
+            </svg>`;
+
+        case 'fireworks_show':
+            const fw = (fx, fy, fcol, fr) => {
+                let rays = '';
+                for(let a=0; a<360; a+=30) {
+                    let x2 = fx + Math.cos(a*Math.PI/180)*fr;
+                    let y2 = fy + Math.sin(a*Math.PI/180)*fr;
+                    rays += `<line x1="${fx}" y1="${fy}" x2="${x2}" y2="${y2}" stroke="${fcol}" stroke-width="2.5"/><circle cx="${x2}" cy="${y2}" r="3" fill="#ffffff"/>`;
+                }
+                return rays;
+            };
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                ${fw(105, 105, "#ec4899", 45)}
+                ${fw(245, 95, "#22d3ee", 52)}
+                ${fw(175, 185, "#a3e635", 40)}
+            </svg>`;
+
+        case 'gradient_bar':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <defs>
+                    <linearGradient id="sunsetGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="rgb(250,0,250)"/>
+                        <stop offset="50%" stop-color="rgb(250,125,125)"/>
+                        <stop offset="100%" stop-color="rgb(250,250,0)"/>
+                    </linearGradient>
+                </defs>
+                <rect x="45" y="115" width="270" height="65" rx="32" fill="url(#sunsetGrad)"/>
+                <text x="180" y="225" text-anchor="middle" fill="#f8fafc" font-size="13" font-family="Fira Code">t.pencolor(250, i, 250 - i)</text>
+            </svg>`;
+
+        case 'crystal_121':
+            let crLines = '';
+            let crx = 180, cry = 160, crang = 0;
+            for(let i=1; i<=36; i++) {
+                let len = i * 4.2;
+                let nx = crx + Math.cos(crang * Math.PI / 180) * len;
+                let ny = cry + Math.sin(crang * Math.PI / 180) * len;
+                let gCol = Math.min(255, i * 7);
+                crLines += `<line x1="${crx}" y1="${cry}" x2="${nx}" y2="${ny}" stroke="rgb(255,${gCol},40)" stroke-width="2"/>`;
+                crx = nx; cry = ny; crang += 121;
+            }
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${crLines}</svg>`;
+
+        case 'neon_lotus':
+            let lRings = '';
+            for(let i=0; i<24; i++) {
+                let a = i * 15;
+                let r = 38 + i * 1.2;
+                let cx = 180 + Math.cos(a*Math.PI/180)*28;
+                let cy = 150 + Math.sin(a*Math.PI/180)*28;
+                let g = Math.min(255, i * 10);
+                let b = Math.max(40, 255 - i * 9);
+                lRings += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgb(80,${g},${b})" stroke-width="1.8"/>`;
+            }
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${lRings}</svg>`;
+
+        case 'bubbles_art':
+            const bData = [
+                [80, 90, 28, "#f472b6"], [150, 75, 18, "#38bdf8"], [240, 85, 34, "#a3e635"],
+                [285, 155, 22, "#facc15"], [195, 145, 40, "#c084fc"], [110, 175, 32, "#2dd4bf"],
+                [70, 215, 16, "#fb923c"], [165, 220, 24, "#f43f5e"], [250, 210, 30, "#60a5fa"]
+            ];
+            let bCircles = bData.map(([bx, by, br, bc]) => `<circle cx="${bx}" cy="${by}" r="${br}" fill="${bc}" fill-opacity="0.8"/>`).join('');
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${bCircles}</svg>`;
+
+        case 'turtle_stamps':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                ${turtleIcon(85, 85, 35, "#f43f5e")}
+                ${turtleIcon(240, 80, 140, "#facc15")}
+                ${turtleIcon(175, 145, -45, "#22d3ee")}
+                ${turtleIcon(95, 195, -120, "#a3e635")}
+                ${turtleIcon(255, 195, 25, "#ec4899")}
+                ${turtleIcon(165, 225, 80, "#fb923c")}
+                <text x="180" y="275" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="Fira Code">t.stamp() по клику мыши</text>
+            </svg>`;
+
+        case 'catch_turtle':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <text x="180" y="55" text-anchor="middle" fill="#4ade80" font-size="20" font-weight="bold" font-family="Fira Code">Очки: 7 🎯</text>
+                <circle cx="210" cy="160" r="45" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-dasharray="5 5" stroke-width="2"/>
+                <g transform="translate(210, 160) scale(2.0)">
+                    <circle r="9" fill="#4ade80" stroke="#ffffff" stroke-width="2"/>
+                    <polygon points="14,0 5,-6 5,6" fill="#ffffff"/>
+                </g>
+                <text x="180" y="260" text-anchor="middle" fill="#94a3b8" font-size="13">Кликни по черепашке — она убежит!</text>
+            </svg>`;
+
+        case 'mirror_turtles':
+            let mLines = '';
+            let m1x = 175, m1y = 150, m2x = 185, m2y = 150, mang = 0;
+            for(let i=1; i<=22; i++) {
+                let len = i * 3.2;
+                let n1x = m1x - Math.cos(mang*Math.PI/180)*len;
+                let n1y = m1y + Math.sin(mang*Math.PI/180)*len;
+                let n2x = m2x + Math.cos(mang*Math.PI/180)*len;
+                let n2y = m2y + Math.sin(mang*Math.PI/180)*len;
+                mLines += `<line x1="${m1x}" y1="${m1y}" x2="${n1x}" y2="${n1y}" stroke="#ec4899" stroke-width="2.5"/>`;
+                mLines += `<line x1="${m2x}" y1="${m2y}" x2="${n2x}" y2="${n2y}" stroke="#22d3ee" stroke-width="2.5"/>`;
+                m1x = n1x; m1y = n1y; m2x = n2x; m2y = n2y; mang += 59;
+            }
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${mLines}</svg>`;
+
+        case 'space_rockets':
+            const rkt = (rx, ry, rcol) => `
+                <rect x="${rx}" y="${ry}" width="44" height="85" fill="${rcol}" stroke="#ffffff" stroke-width="2" rx="4"/>
+                <polygon points="${rx},${ry} ${rx+44},${ry} ${rx+22},${ry-32}" fill="#ef4444"/>
+                <circle cx="${rx+22}" cy="${ry+35}" r="11" fill="#22d3ee" stroke="#ffffff" stroke-width="2"/>
+            `;
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="65" cy="55" r="3" fill="#facc15"/><circle cx="180" cy="40" r="4" fill="#facc15"/><circle cx="295" cy="65" r="3" fill="#facc15"/>
+                ${rkt(60, 150, "#3b82f6")}
+                ${rkt(158, 110, "#9333ea")}
+                ${rkt(256, 150, "#10b981")}
+            </svg>`;
+
+        case 'compass':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="180" cy="150" r="95" fill="none" stroke="#334155" stroke-width="2"/>
+                <line x1="180" y1="35" x2="180" y2="265" stroke="#475569" stroke-width="2"/>
+                <line x1="65" y1="150" x2="295" y2="150" stroke="#475569" stroke-width="2"/>
+                <line x1="180" y1="150" x2="265" y2="150" stroke="#10b981" stroke-width="5"/>
+                ${turtleIcon(265, 150, 0, "#10b981")}
+                <text x="305" y="154" fill="#10b981" font-size="13" font-weight="bold">0° (Восток)</text>
+                <text x="180" y="25" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="bold">90° (Север)</text>
+                <text x="55" y="154" text-anchor="end" fill="#f472b6" font-size="13" font-weight="bold">180°</text>
+                <text x="180" y="285" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="bold">270° (Юг)</text>
+            </svg>`;
+
+        case 'line_step':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="90" cy="150" r="5" fill="#64748b"/>
+                <line x1="90" y1="150" x2="250" y2="150" stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/>
+                ${turtleIcon(250, 150, 0, "#38bdf8")}
+                <text x="170" y="130" text-anchor="middle" fill="#38bdf8" font-size="14" font-family="Fira Code">forward(150)</text>
+            </svg>`;
+
+        case 'square_step':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <rect x="115" y="85" width="130" height="130" fill="none" stroke="#60a5fa" stroke-width="4"/>
+                <circle cx="115" cy="215" r="5" fill="#f43f5e"/>
+                ${turtleIcon(115, 215, 0, "#60a5fa")}
+                <text x="180" y="250" text-anchor="middle" fill="#94a3b8" font-size="13">Квадрат: 4 стороны по 90°</text>
+            </svg>`;
+
+        case 'triangle_step':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <polygon points="110,210 250,210 180,90" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="4"/>
+                <line x1="250" y1="210" x2="310" y2="210" stroke="#64748b" stroke-dasharray="4 4" stroke-width="2"/>
+                <path d="M 285 210 A 35 35 0 0 0 232 180" fill="none" stroke="#f43f5e" stroke-width="3"/>
+                <text x="295" y="185" fill="#f43f5e" font-size="13" font-weight="bold">120°</text>
+                ${turtleIcon(180, 90, -120, "#fbbf24")}
+            </svg>`;
+
+        case 'seq_shapes':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <!-- Square -->
+                <rect x="35" y="115" width="75" height="75" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="3"/>
+                <text x="72" y="215" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="bold">1. Квадрат</text>
+                <!-- Dashed jump 1 -->
+                <line x1="110" y1="190" x2="145" y2="190" stroke="#64748b" stroke-dasharray="4 4" stroke-width="2"/>
+                <!-- Triangle -->
+                <polygon points="145,190 220,190 182,120" fill="rgba(250,204,21,0.2)" stroke="#facc15" stroke-width="3"/>
+                <text x="182" y="215" text-anchor="middle" fill="#facc15" font-size="12" font-weight="bold">2. Треугольник</text>
+                <!-- Dashed jump 2 -->
+                <line x1="220" y1="190" x2="290" y2="190" stroke="#64748b" stroke-dasharray="4 4" stroke-width="2"/>
+                <!-- Circle -->
+                <circle cx="290" cy="152" r="38" fill="rgba(244,63,94,0.2)" stroke="#f43f5e" stroke-width="3"/>
+                <text x="290" y="215" text-anchor="middle" fill="#f43f5e" font-size="12" font-weight="bold">3. Круг</text>
+                ${turtleIcon(290, 190, 0, "#f43f5e")}
+            </svg>`;
+
+        case 'traffic_light':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <rect x="135" y="35" width="90" height="230" rx="14" fill="#1e293b" stroke="#64748b" stroke-width="3"/>
+                <circle cx="180" cy="80" r="26" fill="#ef4444"/>
+                <circle cx="180" cy="150" r="26" fill="#eab308"/>
+                <circle cx="180" cy="220" r="26" fill="#22c55e"/>
+                ${turtleIcon(180, 246, 0, "#22c55e")}
+            </svg>`;
+
+        case 'house':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <rect x="115" y="130" width="130" height="120" fill="#fde68a" stroke="#b45309" stroke-width="3"/>
+                <polygon points="110,130 250,130 180,55" fill="#dc2626" stroke="#991b1b" stroke-width="3"/>
+                <rect x="160" y="170" width="40" height="40" fill="#38bdf8" stroke="#1e3a8a" stroke-width="3"/>
+                ${turtleIcon(245, 250, 0, "#10b981")}
+            </svg>`;
+
+        case 'polygon_hex':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <polygon points="250,150 215,210 145,210 110,150 145,90 215,90" fill="rgba(74,222,128,0.2)" stroke="#4ade80" stroke-width="4"/>
+                <text x="180" y="155" text-anchor="middle" fill="#4ade80" font-size="14" font-family="Fira Code">360 / 6 = 60°</text>
+                ${turtleIcon(250, 150, 60, "#4ade80")}
+            </svg>`;
+
+        case 'star5':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <polygon points="180,55 205,125 280,125 220,170 242,242 180,198 118,242 140,170 80,125 155,125" fill="#facc15" stroke="#ea580c" stroke-width="3"/>
+                <text x="180" y="275" text-anchor="middle" fill="#fbbf24" font-size="13" font-family="Fira Code">Поворот луча: 144°</text>
+            </svg>`;
+
+        case 'rosette':
+            let sqs = '';
+            for(let a=0; a<360; a+=30) {
+                sqs += `<rect x="180" y="150" width="65" height="65" fill="none" stroke="#ec4899" stroke-width="2" transform="rotate(${a} 180 150)"/>`;
+            }
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${sqs}</svg>`;
+
+        case 'rainbow_spiral':
+            const cols = ["#ef4444","#f97316","#eab308","#22c55e","#3b82f6","#a855f7"];
+            let lines = '';
+            let cx = 180, cy = 150, ang = 0;
+            for(let i=1; i<=32; i++) {
+                let len = i * 3.8;
+                let nx = cx + Math.cos(ang * Math.PI / 180) * len;
+                let ny = cy + Math.sin(ang * Math.PI / 180) * len;
+                lines += `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${cols[i%6]}" stroke-width="3" stroke-linecap="round"/>`;
+                cx = nx; cy = ny; ang += 59;
+            }
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${lines}</svg>`;
+
+        case 'coords_grid':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <line x1="20" y1="150" x2="340" y2="150" stroke="#64748b" stroke-width="2"/>
+                <line x1="180" y1="20" x2="180" y2="280" stroke="#64748b" stroke-width="2"/>
+                <circle cx="180" cy="150" r="6" fill="#10b981"/>
+                <text x="192" y="168" fill="#10b981" font-size="12" font-family="Fira Code">(0, 0)</text>
+                <circle cx="260" cy="80" r="8" fill="#f43f5e"/>
+                <text x="260" y="65" text-anchor="middle" fill="#f43f5e" font-size="12" font-family="Fira Code">(100, 100)</text>
+                <circle cx="100" cy="220" r="8" fill="#38bdf8"/>
+                <text x="100" y="245" text-anchor="middle" fill="#38bdf8" font-size="12" font-family="Fira Code">(-100, -100)</text>
+            </svg>`;
+
+        case 'target_rings':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="180" cy="150" r="105" fill="#ef4444"/>
+                <circle cx="180" cy="150" r="78" fill="#f8fafc"/>
+                <circle cx="180" cy="150" r="52" fill="#ef4444"/>
+                <circle cx="180" cy="150" r="26" fill="#facc15"/>
+            </svg>`;
+
+        case 'smiley':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="180" cy="150" r="95" fill="#facc15" stroke="#ca8a04" stroke-width="4"/>
+                <circle cx="145" cy="120" r="12" fill="#0f172a"/>
+                <circle cx="215" cy="120" r="12" fill="#0f172a"/>
+                <path d="M 135 170 A 50 50 0 0 0 225 170" fill="none" stroke="#0f172a" stroke-width="7" stroke-linecap="round"/>
+            </svg>`;
+
+        case 'pixel_sword':
+            let px = '';
+            for(let i=0; i<6; i++) {
+                px += `<rect x="${110 + i*22}" y="${180 - i*22}" width="22" height="22" fill="#22d3ee" stroke="#0891b2" stroke-width="1.5"/>`;
+            }
+            px += `<rect x="88" y="202" width="22" height="22" fill="#92400e"/>`;
+            px += `<rect x="88" y="180" width="22" height="22" fill="#facc15"/>`;
+            px += `<rect x="110" y="202" width="22" height="22" fill="#facc15"/>`;
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${px}</svg>`;
+
+        case 'trees_func':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <!-- Tree 1 -->
+                <rect x="62" y="185" width="16" height="45" fill="#78350f"/>
+                <polygon points="35,185 105,185 70,115" fill="#22c55e"/>
+                <!-- Tree 2 Big -->
+                <rect x="168" y="165" width="24" height="65" fill="#78350f"/>
+                <polygon points="125,165 235,165 180,65" fill="#15803d"/>
+                <!-- Tree 3 Small -->
+                <rect x="275" y="195" width="12" height="35" fill="#78350f"/>
+                <polygon points="255,195 307,195 281,140" fill="#4ade80"/>
+                <text x="180" y="265" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="Fira Code">draw_tree(x, y, size)</text>
+            </svg>`;
+
+        case 'night_city':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="70" cy="50" r="3" fill="#fef08a"/><circle cx="150" cy="40" r="2" fill="#ffffff"/>
+                <circle cx="240" cy="60" r="3" fill="#fef08a"/><circle cx="300" cy="45" r="22" fill="#facc15"/>
+                <circle cx="310" cy="40" r="20" fill="#0f172a"/>
+                <rect x="40" y="150" width="65" height="130" fill="#1e293b" stroke="#334155"/>
+                <rect x="115" y="95" width="80" height="185" fill="#0f172a" stroke="#334155"/>
+                <rect x="205" y="130" width="75" height="150" fill="#1e293b" stroke="#334155"/>
+                <rect x="55" y="170" width="12" height="12" fill="#facc15"/><rect x="80" y="170" width="12" height="12" fill="#334155"/>
+                <rect x="55" y="195" width="12" height="12" fill="#facc15"/><rect x="80" y="195" width="12" height="12" fill="#facc15"/>
+                <rect x="135" y="115" width="14" height="14" fill="#facc15"/><rect x="165" y="115" width="14" height="14" fill="#facc15"/>
+                <rect x="135" y="145" width="14" height="14" fill="#334155"/><rect x="165" y="145" width="14" height="14" fill="#facc15"/>
+                <rect x="135" y="175" width="14" height="14" fill="#facc15"/><rect x="165" y="175" width="14" height="14" fill="#facc15"/>
+                <rect x="225" y="155" width="14" height="14" fill="#facc15"/><rect x="250" y="155" width="14" height="14" fill="#334155"/>
+            </svg>`;
+
+        case 'rgb_circles':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="150" cy="115" r="58" fill="rgba(239,68,68,0.75)"/>
+                <circle cx="210" cy="115" r="58" fill="rgba(34,197,94,0.75)"/>
+                <circle cx="180" cy="170" r="58" fill="rgba(59,130,246,0.75)"/>
+                <circle cx="180" cy="135" r="18" fill="#ffffff"/>
+                <text x="180" y="260" text-anchor="middle" fill="#e2e8f0" font-size="13" font-family="Fira Code">colormode(255): R + G + B</text>
+            </svg>`;
+
+        case 'neon_tunnel':
+            let rects = '';
+            for(let i=0; i<18; i++) {
+                let sz = 25 + i*10;
+                let col = `rgb(${255 - i*12}, ${60 + i*10}, 240)`;
+                rects += `<rect x="${180 - sz/2}" y="${150 - sz/2}" width="${sz}" height="${sz}" fill="none" stroke="${col}" stroke-width="2" transform="rotate(${i*6} 180 150)"/>`;
+            }
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">${rects}</svg>`;
+
+        case 'Interactive_keys':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <rect x="155" y="60" width="50" height="50" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="3"/>
+                <text x="180" y="92" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="18">↑</text>
+                <rect x="95" y="120" width="50" height="50" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="3"/>
+                <text x="120" y="152" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="18">←</text>
+                <rect x="155" y="120" width="50" height="50" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="3"/>
+                <text x="180" y="152" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="18">↓</text>
+                <rect x="215" y="120" width="50" height="50" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="3"/>
+                <text x="240" y="152" text-anchor="middle" fill="#38bdf8" font-weight="bold" font-size="18">→</text>
+                <text x="180" y="220" text-anchor="middle" fill="#94a3b8" font-size="14" font-family="Fira Code">screen.onkey(go_up, "Up")</text>
+            </svg>`;
+
+        case 'race_game':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <line x1="290" y1="40" x2="290" y2="260" stroke="#f8fafc" stroke-width="6" stroke-dasharray="10 10"/>
+                <line x1="60" y1="90" x2="220" y2="90" stroke="#ef4444" stroke-width="4"/>
+                ${turtleIcon(220, 90, 0, "#ef4444")}
+                <line x1="60" y1="150" x2="260" y2="150" stroke="#3b82f6" stroke-width="4"/>
+                ${turtleIcon(260, 150, 0, "#3b82f6")}
+                <line x1="60" y1="210" x2="185" y2="210" stroke="#22c55e" stroke-width="4"/>
+                ${turtleIcon(185, 210, 0, "#22c55e")}
+                <text x="290" y="30" text-anchor="middle" fill="#facc15" font-size="12" font-weight="bold">ФИНИШ</text>
+            </svg>`;
+
+        case 'project_showcase':
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <rect x="40" y="45" width="125" height="90" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+                <text x="102" y="95" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="bold">🌆 Город</text>
+                <rect x="195" y="45" width="125" height="90" rx="10" fill="#1e293b" stroke="#f472b6" stroke-width="2"/>
+                <text x="257" y="95" text-anchor="middle" fill="#f472b6" font-size="13" font-weight="bold">🎮 Космо-Арт</text>
+                <rect x="40" y="155" width="125" height="90" rx="10" fill="#1e293b" stroke="#4ade80" stroke-width="2"/>
+                <text x="102" y="205" text-anchor="middle" fill="#4ade80" font-size="13" font-weight="bold">🌸 Мандала</text>
+                <rect x="195" y="155" width="125" height="90" rx="10" fill="#1e293b" stroke="#facc15" stroke-width="2"/>
+                <text x="257" y="205" text-anchor="middle" fill="#facc15" font-size="13" font-weight="bold">🏁 Гонки</text>
+            </svg>`;
+
+        default:
+            return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full">
+                <circle cx="180" cy="150" r="70" fill="rgba(99,102,241,0.15)" stroke="#6366f1" stroke-width="3"/>
+                ${turtleIcon(180, 150, -45, "#6366f1")}
+            </svg>`;
+    }
+}
+
+// ============================================================================
+// ПОЛНАЯ БАЗА 200 СЛАЙДОВ (ТИТУЛЬНЫЙ СЛАЙД КУРСА + 8 ЗАНЯТИЙ)
+// ============================================================================
+const slidesData = [
+    // ========================================================================
+    // ОБЩИЙ ТИТУЛЬНЫЙ СЛАЙД КУРСА (Слайд 001 / 200)
+    // ========================================================================
+    { l: 0, type: 'hero', tag: 'Курс из 8 занятий • 200 слайдов', title: 'Python: Цифровые изображения и Черепашья Графика', sub: 'От первых геометрических фигур и циклов до пиксель-арта, неоновых градиентов RGB, интерактивных игр и собственного проекта!', vis: 'course_cover' },
+
+    // ========================================================================
+    // ЗАНЯТИЕ 1: ПЕРВЫЕ ШАГИ И ФИГУРЫ ПО ОЧЕРЕДИ (Слайды 2 - 26)
+    // ========================================================================
+    { l: 1, type: 'hero', tag: 'Занятие 1 • Старт', title: 'Привет, Черепашка! Рисуем фигуры по очереди', sub: 'Знакомство с Python Turtle, первые шаги, повороты, цвета и простые фигуры на одном экране', vis: 'intro_turtle' },
+    { l: 1, type: 'theory', tag: 'Теория 1', title: 'Кто такая Черепашка в Python?', bullets: [
+        ['Виртуальный робот-художник', 'Представь маленького робота с фломастером на животе, который ползает по экрану и оставляет яркий след.'],
+        ['Понимает команды на Python', 'Мы пишем простые английские слова, а Черепашка послушно выполняет их сверху вниз.'],
+        ['Видно каждый шаг!', 'В отличие от скучных примеров с текстом, в Turtle ты сразу видишь красивый рисунок!']
+    ], vis: 'intro_turtle' },
+    { l: 1, type: 'code', tag: 'Скелет программы', title: 'Как вызвать Черепашку на экран?', desc: 'Эти 4 строчки начинают любую нашу программу:', code: `import turtle\n\nt = turtle.Turtle()\nt.shape("turtle")  # Делаем курсор черепашкой!\n\n# Здесь будут наши команды рисования\n\nturtle.done()      # Чтобы окно не закрылось`, vis: 'intro_turtle' },
+    { l: 1, type: 'theory', tag: 'Теория 2', title: 'Учим Черепашку ходить вперед и назад', bullets: [
+        ['t.forward(100) — Шаг вперёд', 'Число в скобках — это количество пикселей (маленьких точек экрана). 100 пикселей — отличный средний шаг.'],
+        ['t.backward(100) — Шаг назад', 'Черепашка пятится задом наперёд, но продолжает смотреть в ту же сторону.'],
+        ['Линия рисуется сама', 'Пока Черепашка идёт, её фломастер опущен и чертит ровную линию.']
+    ], vis: 'line_step' },
+    { l: 1, type: 'theory', tag: 'Теория 3', title: 'Куда смотрит Черепашка? Компас углов', bullets: [
+        ['На старте смотрит ВПРАВО (0°)', 'Когда программа запускается, нос Черепашки всегда повернут направо.'],
+        ['t.left(90) — Поворот налево', 'Поворачивает Черепашку на месте против часовой стрелки. 90 градусов — это ровный прямой угол!'],
+        ['t.right(90) — Поворот направо', 'Поворачивает Черепашку по часовой стрелке на указанное число градусов.']
+    ], vis: 'compass' },
+    { l: 1, type: 'question', tag: 'Вопрос группе', title: 'Как нарисовать ровный квадрат?', sub: 'Сколько раз нужно шагнуть вперёд и на какой угол поворачивать на каждом углу?' },
+    { l: 1, type: 'task', tag: 'Разминка 1', title: 'Рисуем первый квадрат 100x100', steps: [
+        'Создай черепашку t = turtle.Turtle() и задай форму t.shape("turtle").',
+        'Напиши команду шага вперёд t.forward(100) и на следующей строке поворот налево t.left(90).',
+        'Повтори эту пару команд 4 раза для всех четырёх сторон квадрата.'
+    ], vis: 'square_step' },
+    { l: 1, type: 'code', tag: 'Решение разминки', title: 'Код нашего первого квадрата', desc: 'Каждая команда пишется с новой строки:', code: `import turtle\n\nt = turtle.Turtle()\nt.shape("turtle")\n\nt.forward(100)\nt.left(90)\nt.forward(100)\nt.left(90)\nt.forward(100)\nt.left(90)\nt.forward(100)\nt.left(90)\n\nturtle.done()`, vis: 'square_step' },
+    { l: 1, type: 'theory', tag: 'Теория 4', title: 'Секрет треугольника: почему поворот 120°, а не 60°?', bullets: [
+        ['Черепашка поворачивает снаружи!', 'Представь, что ты идёшь прямо. Чтобы свернуть на 90°, ты поворачиваешь на четверть круга.'],
+        ['Для острого уголка нужно развернуться сильнее', 'Чтобы внутри треугольника получился угол 60°, Черепашке нужно повернуть на 180° - 60° = 120°!'],
+        ['Запомни главное число: 120', 'Три шага forward(100) и три поворота left(120) дадут идеальный треугольник.']
+    ], vis: 'triangle_step' },
+    { l: 1, type: 'theory', tag: 'Теория 5', title: 'Супер-команда для круга и точки!', bullets: [
+        ['t.circle(50) — Рисует ровный круг', 'В скобках пишем радиус круга. Чем больше число, тем огромнее получится круг!'],
+        ['t.dot(30) — Ставит жирную круглую точку', 'Отлично подходит для рисования глаз смайлика, колёс или конфетти.'],
+        ['Никаких сложных формул', 'Черепашка сама умеет крутиться по кругу с помощью одной короткой команды.']
+    ], vis: 'seq_shapes' },
+    { l: 1, type: 'theory', tag: 'Теория 6', title: 'Цветные фломастеры и толщина линии', bullets: [
+        ['t.pencolor("red") — Цвет линии', 'Названия цветов пишем в кавычках: "red", "blue", "green", "gold", "purple", "orange", "deeppink".'],
+        ['t.pensize(5) — Толщина фломастера', 'По умолчанию линия тоненькая (1). Поставь 4 или 6, чтобы рисунок был ярким и заметным!'],
+        ['Цвет можно менять много раз!', 'Нарисовал синий квадрат -> поменял цвет на красный -> рисуешь красный треугольник!']
+    ], vis: 'seq_shapes' },
+    { l: 1, type: 'theory', tag: 'Теория 7', title: 'Как перейти на новое место без лишней черты?', bullets: [
+        ['t.penup() — Поднять фломастер в воздух', 'Теперь Черепашка ползёт по экрану, но НЕ оставляет за собой следа!'],
+        ['t.pendown() — Опустить фломастер обратно', 'Когда дошли до свободного места, опускаем перо и рисуем следующую фигуру.'],
+        ['Как в жизни на бумаге', 'Ты всегда отрываешь руку с карандашом от листа, когда переходишь к новому рисунку.']
+    ], vis: 'seq_shapes' },
+    { l: 1, type: 'task', tag: 'ГЛАВНОЕ ЗАДАНИЕ 1', title: 'Парад фигур: рисуем 3 разные фигуры по очереди!', steps: [
+        '1-я фигура: Нарисуй синий КВАДРАТ со стороной 80 пикселей.',
+        'Подними перо t.penup(), проползи вправо t.forward(120) и опусти перо t.pendown().',
+        '2-я фигура: Смени цвет на оранжевый и нарисуй ТРЕУГОЛЬНИК (3 стороны по 80, угол 120°).',
+        'Снова подними перо, отступи вправо на 130 пикселей, опусти перо и нарисуй малиновый КРУГ t.circle(40)!'
+    ], vis: 'seq_shapes' },
+    { l: 1, type: 'code', tag: 'Разбор Задания 1 (Часть 1)', title: 'Рисуем Квадрат и шагаем к Треугольнику', desc: 'Пишем каждую команду аккуратно с новой строки:', code: `import turtle\n\nt = turtle.Turtle()\nt.pensize(4)\n\n# 1. Синий квадрат\nt.pencolor("dodgerblue")\nt.forward(80)\nt.left(90)\nt.forward(80)\nt.left(90)\nt.forward(80)\nt.left(90)\nt.forward(80)\nt.left(90)\n\n# Переход вправо без следа\nt.penup()\nt.forward(120)\nt.pendown()`, vis: 'seq_shapes' },
+    { l: 1, type: 'code', tag: 'Разбор Задания 1 (Часть 2)', title: 'Рисуем Треугольник и Круг по очереди', desc: 'Продолжаем код: добавляем треугольник и круг в ряд!', code: `# 2. Оранжевый треугольник\nt.pencolor("orange")\nt.forward(80)\nt.left(120)\nt.forward(80)\nt.left(120)\nt.forward(80)\nt.left(120)\n\n# Переход к третьей фигуре\nt.penup()\nt.forward(130)\nt.pendown()\n\n# 3. Малиновый круг\nt.pencolor("deeppink")\nt.circle(40)\n\nturtle.done()`, vis: 'seq_shapes' },
+    { l: 1, type: 'theory', tag: 'Теория 8', title: 'Заливка цветом: как раскрасить фигуру внутри?', bullets: [
+        ['t.fillcolor("yellow") — Выбираем цвет краски', 'Или сразу задаём оба цвета одной командой: t.color("red", "yellow") — контур и заливка.'],
+        ['t.begin_fill() — Начать закрашивание', 'Пишем ПЕРЕД тем, как начать рисовать фигуру.'],
+        ['t.end_fill() — Закончить закрашивание', 'Пишем ПОСЛЕ того, как фигура замкнулась. Внутренняя часть мгновенно зальётся цветом!']
+    ], vis: 'traffic_light' },
+    { l: 1, type: 'task', tag: 'Практика 2', title: 'Весёлый Светофор из трёх кругов', steps: [
+        'Нарисуй красный закрашенный круг с помощью простой команды t.dot(60, "red").',
+        'Подними перо, поверни вниз t.right(90) и проползи 70 пикселей.',
+        'Нарисуй жёлтый сигнал светофора, а ещё ниже на 70 пикселей — зелёный!'
+    ], vis: 'traffic_light' },
+    { l: 1, type: 'code', tag: 'Разбор Практики 2', title: 'Код Светофора', desc: 'Команда t.dot(размер, цвет) делает рисование кругов невероятно простым:', code: `import turtle\n\nt = turtle.Turtle()\nt.penup()\n\n# Красный свет\nt.dot(60, "red")\n\n# Шагаем вниз к жёлтому\nt.right(90)\nt.forward(70)\nt.dot(60, "gold")\n\n# Шагаем вниз к зелёному\nt.forward(70)\nt.dot(60, "limegreen")\n\nt.hideturtle()\nturtle.done()`, vis: 'traffic_light' },
+    { l: 1, type: 'checkpoint', tag: 'Физкультминутка • 45 мин', title: 'Время размять глаза и плечи! 👀', sub: 'Оторвись от монитора на 2 минуты: посмотри вдаль за окно, крепко зажмурься 5 раз и потянись вверх!' },
+    { l: 1, type: 'task', tag: 'Практика 3', title: 'Собираем Домик из квадрата и треугольника', steps: [
+        'Нарисуй квадрат стен со стороной 120 пикселей и закрась его бежевым ("moccasin").',
+        'Поднимись по левой стене наверх на 120 пикселей.',
+        'Сверху нарисуй красную треугольную крышу со стороной 120 пикселей (угол поворота 120°).'
+    ], vis: 'house' },
+    { l: 1, type: 'code', tag: 'Разбор Практики 3 (Часть 1)', title: 'Код Домика: рисуем квадратные стены', desc: 'Сначала строим и закрашиваем стены нашего дома:', code: `import turtle\n\nt = turtle.Turtle()\nt.pensize(3)\n\n# 1. Стены дома (квадрат)\nt.color("sienna", "moccasin")\nt.begin_fill()\nt.forward(120)\nt.left(90)\nt.forward(120)\nt.left(90)\nt.forward(120)\nt.left(90)\nt.forward(120)\nt.left(90)\nt.end_fill()`, vis: 'house' },
+    { l: 1, type: 'code', tag: 'Разбор Практики 3 (Часть 2)', title: 'Код Домика: поднимаемся и строим крышу', desc: 'Переходим наверх стен и рисуем треугольную крышу:', code: `# Поднимаемся наверх к крыше\nt.left(90)\nt.forward(120)\nt.right(90)\n\n# 2. Крыша (треугольник)\nt.color("darkred", "crimson")\nt.begin_fill()\nt.forward(120)\nt.left(120)\nt.forward(120)\nt.left(120)\nt.forward(120)\nt.left(120)\nt.end_fill()\n\nturtle.done()`, vis: 'house' },
+    { l: 1, type: 'task', tag: 'Бонус-задание ⭐', title: 'Снеговик из трёх снежных комов', steps: [
+        'Для тех, кто справился раньше всех: нарисуй Снеговика из трёх кругов разного размера!',
+        'Нижний ком — диаметр 120, средний — 90, голова — 60.',
+        'Добавь оранжевый нос-морковку через t.dot(12, "orange")!'
+    ], vis: 'snowman' },
+    { l: 1, type: 'code', tag: 'Код Бонуса ⭐', title: 'Быстрый Снеговик через точки dot()', desc: 'Посмотри, как легко нарисовать снеговика на тёмном фоне:', code: `import turtle\n\nt = turtle.Turtle()\nturtle.bgcolor("midnightblue")\nt.penup()\n\nt.dot(120, "white")  # Нижний ком\nt.left(90)\nt.forward(80)\nt.dot(90, "white")   # Средний ком\nt.forward(65)\nt.dot(60, "white")   # Голова\n\nt.dot(12, "orange")  # Нос-морковка\nt.hideturtle()\nturtle.done()`, vis: 'snowman' },
+    { l: 1, type: 'summary', tag: 'Итоги Занятия 1', title: 'Круто поработали! Чему мы научились:', bullets: [
+        ['Управлять движением Черепашки', 'Шагать вперёд/назад (forward, backward) и поворачивать на любые углы (left, right).'],
+        ['Рисовать разные фигуры по очереди', 'Переносить перо через penup() и pendown() и чертить квадрат, треугольник и круг рядом.'],
+        ['Раскрашивать рисунки', 'Менять цвета линий, толщину пера и заливать фигуры через begin_fill() и end_fill().']
+    ], vis: 'seq_shapes' },
+
+    // ========================================================================
+    // ЗАНЯТИЕ 2: МАГИЯ ПОВТОРЕНИЙ И ЦИКЛ FOR (Слайды 26 - 50)
+    // ========================================================================
+    { l: 2, type: 'hero', tag: 'Занятие 2 • Циклы', title: 'Магия повторений: Цикл for и Калейдоскопы', sub: 'Как сократить код в 10 раз, рисовать любые многоугольники, пятиконечные звёзды и радужные спирали', vis: 'rainbow_spiral' },
+    { l: 2, type: 'theory', tag: 'Теория 1', title: 'Зачем программисту нужны циклы?', bullets: [
+        ['Писать одно и то же — скучно!', 'На прошлом уроке для квадрата мы 4 раза подряд писали одинаковые команды forward и left.'],
+        ['А если у фигуры 20 сторон?', 'Пришлось бы написать 40 строчек кода вручную! Программисты так не делают.'],
+        ['Цикл for — команда-повторитель', 'Мы пишем команду один раз и говорим компьютеру: «Повтори это 4 раза!»']
+    ], vis: 'square_step' },
+    { l: 2, type: 'code', tag: 'Сравнение кода', title: 'Квадрат в 3 строчки вместо 8!', desc: 'Посмотри, насколько короче и аккуратнее стал код квадрата с циклом for:', code: `import turtle\n\nt = turtle.Turtle()\nt.pensize(4)\nt.pencolor("limegreen")\n\n# Повторяем 4 раза:\nfor i in range(4):\n    t.forward(100)\n    t.left(90)\n\nturtle.done()`, vis: 'square_step' },
+    { l: 2, type: 'theory', tag: 'Теория 2', title: 'Главное правило оформления цикла for', bullets: [
+        ['Двоеточие в конце строки', 'После слова range(4): обязательно ставится двоеточие (:). Оно говорит: «внимание, внутри будут команды!»'],
+        ['Отступ (ступенька вправо)', 'Все команды внутри цикла сдвигаются вправо на 4 пробела (клавиша Tab).'],
+        ['Выход из цикла', 'Как только ты напишешь строку без отступа у левого края — цикл закончится.']
+    ], vis: 'polygon_hex' },
+    { l: 2, type: 'theory', tag: 'Теория 3', title: 'Супер-формула любого многоугольника: 360 / N', bullets: [
+        ['Полный оборот круга — это 360 градусов', 'Обходя любую фигуру по кругу, Черепашка в сумме поворачивается ровно на 360°.'],
+        ['Делим 360 на количество сторон!', 'Треугольник: 360 / 3 = 120°. Квадрат: 360 / 4 = 90°. Пятиугольник: 360 / 5 = 72°.'],
+        ['Шестиугольник (пчелиная сота)', '360 / 6 = 60°. Восьмиугольник: 360 / 8 = 45°! Пускай считает сам Python!']
+    ], vis: 'polygon_hex' },
+    { l: 2, type: 'question', tag: 'Мини-викторина', title: 'Какой угол поворота у правильного десятиугольника?', sub: 'Подсказка: раздели полный круг (360 градусов) на 10 сторон!' },
+    { l: 2, type: 'task', tag: 'Задание 1', title: 'Рисуем 3 многоугольника по очереди через цикл!', steps: [
+        'Используя цикл for, нарисуй сначала ПЯТИУГОЛЬНИК (5 сторон по 60 пикселей, угол 360 / 5).',
+        'Подними перо, переползи вправо на 140 пикселей и опусти перо.',
+        'Нарисуй ШЕСТИУГОЛЬНИК (6 сторон) и ВОСЬМИУГОЛЬНИК (8 сторон) разных цветов!'
+    ], vis: 'multi_polygons' },
+    { l: 2, type: 'code', tag: 'Разбор Задания 1', title: 'Код для шестиугольника по формуле', desc: 'Меняй число в переменной sides — и программа сама нарисует любую фигуру:', code: `import turtle\n\nt = turtle.Turtle()\nt.pensize(3)\n\nsides = 6  # Попробуй поставить 5, 8 или 10!\n\nt.color("darkgreen", "palegreen")\nt.begin_fill()\nfor i in range(sides):\n    t.forward(70)\n    t.left(360 / sides)\nt.end_fill()\n\nturtle.done()`, vis: 'polygon_hex' },
+    { l: 2, type: 'theory', tag: 'Теория 4', title: 'Как нарисовать настоящую пятиконечную звезду? ⭐', bullets: [
+        ['У звезды 5 острых лучей', 'Значит, наш цикл будет повторяться ровно 5 раз: for i in range(5):'],
+        ['Волшебный угол звезды — 144 градуса!', 'Когда Черепашка чертит звезду, её линии пересекаются, а угол разворота на кончике луча равен 144°.'],
+        ['Красивая заливка', 'Оберни цикл в begin_fill() и end_fill(), чтобы получить золотую звезду шерифа!']
+    ], vis: 'star5' },
+    { l: 2, type: 'task', tag: 'Задание 2', title: 'Золотая пятиконечная звезда', steps: [
+        'Включи тёмно-синий фон ночного неба: turtle.bgcolor("midnightblue").',
+        'Выбери золотой цвет заливки: t.color("orange", "gold").',
+        'В цикле на 5 повторений шагай вперёд на 150 пикселей и поворачивай налево на 144 градуса.'
+    ], vis: 'star5' },
+    { l: 2, type: 'code', tag: 'Разбор Задания 2', title: 'Код Золотой звезды', desc: 'Короткий и чистый код сияющей звезды:', code: `import turtle\n\nt = turtle.Turtle()\nturtle.bgcolor("midnightblue")\nt.pensize(3)\n\nt.color("darkorange", "gold")\nt.begin_fill()\nfor i in range(5):\n    t.forward(150)\n    t.left(144)\nt.end_fill()\n\nt.hideturtle()\nturtle.done()`, vis: 'star5' },
+    { l: 2, type: 'theory', tag: 'Теория 5', title: 'Ускоряем Черепашку до супер-скорости! 🚀', bullets: [
+        ['Черепашка ползает не спеша', 'Когда нужно нарисовать 50 или 100 линий в узоре, ждать обычную черепашку слишком долго.'],
+        ['t.speed(0) — Турбо-режим!', 'Ноль в команде speed(0) означает максимальную мгновенную скорость без задержек.'],
+        ['Скорости от 1 до 10', 'speed(1) — очень медленно, speed(5) — средне, speed(10) — быстро, speed(0) — супер-ракета!']
+    ], vis: 'rosette' },
+    { l: 2, type: 'theory', tag: 'Теория 6', title: 'Цветок из квадратов: цикл внутри цикла!', bullets: [
+        ['Как сделать круговой узор (мандалу)?', 'Нарисуем один квадрат, повернёмся чуть-чуть в сторону (на 30°) и нарисуем ещё один квадрат!'],
+        ['12 квадратов по кругу', 'Так как 12 * 30° = 360°, двенадцать квадратов замкнут полный круг и образуют красивый цветок.'],
+        ['Матрёшка из циклов', 'Внешний цикл крутит узор 12 раз, а внутренний цикл рисует сам квадрат из 4 сторон.']
+    ], vis: 'rosette' },
+    { l: 2, type: 'task', tag: 'Задание 3', title: 'Кружевной цветок из 12 квадратов', steps: [
+        'Включи турбо-скорость t.speed(0) и выбери яркий цвет t.pencolor("deeppink").',
+        'Напиши внешний цикл: for i in range(12):',
+        'Внутри него нарисуй квадрат циклом for j in range(4):, а после квадрата поверни на t.left(30).'
+    ], vis: 'rosette' },
+    { l: 2, type: 'code', tag: 'Разбор Задания 3', title: 'Код кружевного цветка', desc: 'Обрати внимание на отступы — один цикл вложен внутрь другого:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\nt.pencolor("deeppink")\nt.pensize(2)\n\nfor i in range(12):\n    # Рисуем 1 квадрат\n    for j in range(4):\n        t.forward(90)\n        t.left(90)\n    # Поворачиваем для следующего лепестка\n    t.left(30)\n\nt.hideturtle()\nturtle.done()`, vis: 'rosette' },
+    { l: 2, type: 'checkpoint', tag: 'Физкультминутка • 45 мин', title: 'Гимнастика для глаз и кистей рук! 👐', sub: 'Встряхни кистями рук, разомни пальцы и посмотри в окно на далёкие облака или деревья.' },
+    { l: 2, type: 'theory', tag: 'Теория 7', title: 'Как нарисовать растущую спираль?', bullets: [
+        ['Секрет счётчика i в цикле', 'Переменная i в цикле for i in range(50): на каждом шаге сама растёт: 0, 1, 2, 3, 4, 5...'],
+        ['Увеличиваем шаг: t.forward(i * 4)', 'На 1-м шаге линия будет длиной 4, на 2-м — 8, на 3-м — 12, на 10-м — 40 пикселей!'],
+        ['Линия раскручивается наружу', 'Поскольку каждый следующий отрезок длиннее предыдущего, фигура не замыкается, а превращается в спираль!']
+    ], vis: 'rainbow_spiral' },
+    { l: 2, type: 'task', tag: 'Задание 4', title: 'Квадратная и закрученная спираль-туннель', steps: [
+        'Запусти цикл на 60 шагов: for i in range(60):',
+        'Внутри шагай вперёд на растущую длину: t.forward(i * 4) и поворачивай на t.left(90).',
+        'А теперь поменяй угол 90 на 89 или 91 градус и посмотри, как появится 3D-эффект!'
+    ], vis: 'cyan_spiral' },
+    { l: 2, type: 'code', tag: 'Разбор Задания 4', title: 'Код спирального туннеля', desc: 'Угол 89 градусов заставляет квадратную спираль красиво закручиваться:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\nt.pencolor("cyan")\nt.pensize(2)\n\nfor i in range(70):\n    t.forward(i * 4)\n    t.left(89)  # Секрет закрутки!\n\nt.hideturtle()\nturtle.done()`, vis: 'cyan_spiral' },
+    { l: 2, type: 'theory', tag: 'Теория 8', title: 'Коробка с цветными карандашами (Списки цветов)', bullets: [
+        ['Список цветов в квадратных скобках', 'colors = ["red", "orange", "yellow", "green", "cyan", "violet"]'],
+        ['Меняем цвет на каждом шаге!', 'Команда t.pencolor(colors[i % 6]) берёт из списка по очереди 1-й, 2-й, 3-й цвет и так по кругу!'],
+        ['Настоящая радуга на экране', 'Каждая новая грань спирали будет окрашена в свой яркий цвет.']
+    ], vis: 'rainbow_spiral' },
+    { l: 2, type: 'task', tag: 'Проект Урока 2', title: 'Гипнотическая Радужная Спираль 🌈', steps: [
+        'Создай список из 6 ярких цветов радуги.',
+        'В цикле на 80 шагов меняй цвет пера через colors[i % 6].',
+        'Двигайся вперёд на i * 3 и поворачивай налево на 59 градусов!'
+    ], vis: 'rainbow_spiral' },
+    { l: 2, type: 'code', tag: 'Код Проекта Урока 2', title: 'Радужная шестиугольная спираль', desc: 'Поворот на 59 градусов (почти 60°) даёт невероятный радужный вихрь:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\nt.pensize(2)\n\ncolors = ["red", "orange", "gold", "lime", "cyan", "magenta"]\n\nfor i in range(85):\n    t.pencolor(colors[i % 6])\n    t.forward(i * 3)\n    t.left(59)\n\nt.hideturtle()\nturtle.done()`, vis: 'rainbow_spiral' },
+    { l: 2, type: 'task', tag: 'Бонус-задание ⭐', title: 'Звёздный вихрь (Спираль из звёзд)', steps: [
+        'Что будет, если в радужной спирали поворачивать не на 59 градусов, а на угол звезды — 145 градусов?',
+        'Поменяй в коде угол t.left(59) на t.left(145) и запусти программу!',
+        'Подбери свои 4 любимых цвета в списке.'
+    ], vis: 'star_spiral' },
+    { l: 2, type: 'code', tag: 'Код Бонуса ⭐', title: 'Неоновая спиральная звезда', desc: 'Угол 145° закручивает пятиконечную звезду в объёмный кристалл:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\n\ncolors = ["deeppink", "cyan", "gold", "springgreen"]\n\nfor i in range(70):\n    t.pencolor(colors[i % 4])\n    t.forward(i * 4)\n    t.left(145)\n\nt.hideturtle()\nturtle.done()`, vis: 'star_spiral' },
+    { l: 2, type: 'summary', tag: 'Итоги Занятия 2', title: 'Ты освоил супер-силу циклов!', bullets: [
+        ['Цикл for i in range(n)', 'Позволяет повторять любые команды десятки и сотни раз без копирования кода.'],
+        ['Формула 360 / N и Звёзды', 'Мы научились рисовать любые правильные многоугольники и пятиконечные звёзды (144°).'],
+        ['Спирали и Списки цветов', 'Узнали, как увеличивать шаг i * 3 и автоматически переключать цвета радуги!']
+    ], vis: 'rainbow_spiral' },
+
+    // ========================================================================
+    // ЗАНЯТИЕ 3: КООРДИНАТЫ И РИСУНКИ ПО ТОЧКАМ (Слайды 51 - 75)
+    // ========================================================================
+    { l: 3, type: 'hero', tag: 'Занятие 3 • Координаты', title: 'Телепортация по экрану: Координаты (X, Y) и Эмодзи', sub: 'Учимся прыгать в любую точку экрана командой goto(x, y), рисовать мишень, смайлик и пиксельный меч из Minecraft', vis: 'smiley' },
+    { l: 3, type: 'theory', tag: 'Теория 1', title: 'Экран как карта сокровищ: оси X и Y', bullets: [
+        ['Центр экрана — точка (0, 0)', 'В самом начале Черепашка сидит ровно посередине окна в координатах X = 0, Y = 0.'],
+        ['Координата X — влево и вправо', 'Шагаем вправо — X с плюсом (+100, +200). Шагаем влево — X с минусом (-100, -200).'],
+        ['Координата Y — вверх и вниз', 'Поднимаемся наверх — Y с плюсом (+150). Спускаемся вниз — Y с минусом (-150).']
+    ], vis: 'coords_grid' },
+    { l: 3, type: 'code', tag: 'Пример на карте', title: 'Ставим цветные точки по углам экрана', desc: 'Команда t.goto(x, y) мгновенно переносит Черепашку по точному адресу:', code: `import turtle\n\nt = turtle.Turtle()\nt.penup()\n\nt.goto(0, 0)\nt.dot(20, "limegreen")   # Центр (0, 0)\n\nt.goto(150, 100)\nt.dot(20, "red")         # Справа вверху\n\nt.goto(-150, -100)\nt.dot(20, "dodgerblue")  # Слева внизу\n\nturtle.done()`, vis: 'coords_grid' },
+    { l: 3, type: 'theory', tag: 'Теория 2', title: 'Чем goto(x, y) круче обычного forward()?', bullets: [
+        ['Не зависит от поворота головы!', 'Даже если Черепашка закружилась, команда goto(100, 50) приведёт её точно в цель.'],
+        ['Золотое правило телепортации', 'Перед прыжком в новую точку не забудь поднять перо t.penup(), а после прыжка — опустить t.pendown()!'],
+        ['Команда t.home() — Домой!', 'Быстро возвращает Черепашку обратно в центр (0, 0) и поворачивает направо.']
+    ], vis: 'coords_grid' },
+    { l: 3, type: 'question', tag: 'Проверка смекалки', title: 'В каком углу экрана окажется Черепашка после goto(-200, 150)?', sub: 'Подумай: X отрицательный (-200), а Y положительный (+150)!' },
+    { l: 3, type: 'task', tag: 'Задание 1', title: 'Рисуем Большой Ковш (Созвездие Большой Медведицы)', steps: [
+        'Сделай фон тёмно-синим, а цвет пера — голубым или белым.',
+        'Перейди в первую звезду созвездия, поставь яркую точку t.dot(12, "gold") и опусти перо.',
+        'По очереди соедини 7 точек звёзд командами goto(x, y) и dot()!'
+    ], vis: 'constellation' },
+    { l: 3, type: 'code', tag: 'Разбор Задания 1', title: 'Код Созвездия по координатам', desc: 'Черепашка переходит от звезды к звезде и соединяет их линией:', code: `import turtle\n\nt = turtle.Turtle()\nturtle.bgcolor("#0b1021")\nt.pencolor("cyan")\nt.pensize(2)\n\nstars = [(-180, 80), (-110, 95), (-50, 60), (10, 45), (30, -20), (120, -10), (140, 55)]\n\nt.penup()\nfor x, y in stars:\n    t.goto(x, y)\n    t.pendown()\n    t.dot(12, "gold")\n\nt.hideturtle()\nturtle.done()`, vis: 'constellation' },
+    { l: 3, type: 'theory', tag: 'Теория 3', title: 'Как нарисовать ровную мишень в центре экрана?', bullets: [
+        ['Супер-простой способ через t.dot()', 'Команда t.dot(диаметр, цвет) ставит круг с центром прямо под Черепашкой в точке (0, 0)!'],
+        ['От большего круга к меньшему', 'Сначала ставим большой круг dot(240, "red"), поверх него — поменьше dot(180, "white") и так далее!'],
+        ['А если через circle(r)?', 'Тогда перед каждым кругом радиуса r нужно спуститься чуть ниже центра: t.goto(0, -r).']
+    ], vis: 'target_rings' },
+    { l: 3, type: 'task', tag: 'Задание 2', title: 'Снайперская Мишень и Щит Капитана Америка', steps: [
+        'Используй команду t.dot(размер, цвет) в центре координат (0, 0).',
+        'Нарисуй 4 вложенных круга: 240 (красный), 180 (белый), 120 (красный), 60 (золотой центр).',
+        'Попробуй превратить мишень в щит: сделай центральный круг синим и нарисуй в центре белую звезду!'
+    ], vis: 'target_rings' },
+    { l: 3, type: 'code', tag: 'Разбор Задания 2', title: 'Код идеальной Мишени', desc: 'Послойное наложение кругов от самого большого к маленькому:', code: `import turtle\n\nt = turtle.Turtle()\nt.penup()\n\n# Рисуем кольца от большого к малому:\nt.dot(240, "crimson")\nt.dot(180, "white")\nt.dot(120, "crimson")\nt.dot(60, "gold")\n\nt.hideturtle()\nturtle.done()`, vis: 'target_rings' },
+    { l: 3, type: 'theory', tag: 'Теория 4', title: 'Как нарисовать дугу улыбки? Секрет circle(r, угол)', bullets: [
+        ['t.circle(60) — полный круг (360°)', 'Если написать одно число, Черепашка пробежит всю окружность целиком.'],
+        ['t.circle(60, 180) — ровно ПОЛОВИНА круга!', 'Второе число в скобках говорит, сколько градусов дуги нужно прочертить. 180° — это полукруг (улыбка!).'],
+        ['t.setheading(-60) — направление старта', 'Поворачивает Черепашку вниз под углом, чтобы дуга улыбки смотрела ровно вверх.']
+    ], vis: 'smiley' },
+    { l: 3, type: 'task', tag: 'Задание 3', title: 'Рисуем крутой Эмодзи-Смайлик 😎', steps: [
+        'В центре (0, 0) нарисуй большой жёлтый круг головы: t.dot(220, "gold").',
+        'Прыгни влево-вверх t.goto(-40, 30) и поставь левый глаз t.dot(25, "black").',
+        'Прыгни симметрично вправо-вверх t.goto(40, 30) и поставь правый глаз!',
+        'Перейди в точку (-45, -20) и нарисуй дугу улыбки через t.circle(52, 120).'
+    ], vis: 'smiley' },
+    { l: 3, type: 'code', tag: 'Разбор Задания 3', title: 'Код Эмодзи-Смайлика', desc: 'Координаты помогают расположить глаза и улыбку идеально симметрично:', code: `import turtle\n\nt = turtle.Turtle()\nt.penup()\n\n# 1. Жёлтая голова\nt.goto(0, 0)\nt.dot(220, "gold")\n\n# 2. Левый и правый глаз\nt.goto(-40, 30)\nt.dot(25, "black")\nt.goto(40, 30)\nt.dot(25, "black")\n\n# 3. Улыбка дугой\nt.goto(-45, -20)\nt.pendown()\nt.pensize(8)\nt.pencolor("black")\nt.setheading(-60)\nt.circle(52, 120)\n\nt.hideturtle()\nturtle.done()`, vis: 'smiley' },
+    { l: 3, type: 'checkpoint', tag: 'Физкультминутка • 45 мин', title: 'Разминка! Зарядка для спины и глаз 🧘', sub: 'Встань из-за стола, расправь плечи, сделай 5 наклонов и посмотри на самый дальний предмет в комнате.' },
+    { l: 3, type: 'theory', tag: 'Теория 5', title: 'Что такое Пиксель-арт (как в Minecraft)?', bullets: [
+        ['Картинка из цветных кубиков-блоков', 'В игре Minecraft и ретро-играх все предметы состоят из ровных квадратных пикселей.'],
+        ['Рисуем квадратные блоки по сетке', 'Если размер одного кубика равен 25 пикселям, то соседний кубик стоит на 25 пикселей правее или выше!'],
+        ['Диагональ: шаг по X и шаг по Y', 'Чтобы кубики шли лесенкой по диагонали, мы увеличиваем сразу и X, и Y на каждом шаге цикла.']
+    ], vis: 'pixel_sword' },
+    { l: 3, type: 'code', tag: 'Помощник для пикселей', title: 'Команда-штамп для одного квадратного кубика', desc: 'Чтобы не писать 4 стороны квадрата каждый раз, сделаем заготовку pixel(x, y, col):', code: `def pixel(x, y, col):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.color("#0f172a", col)\n    t.begin_fill()\n    for i in range(4):\n        t.forward(25)\n        t.left(90)\n    t.end_fill()`, vis: 'pixel_sword' },
+    { l: 3, type: 'task', tag: 'Проект Урока 3', title: 'Алмазный меч из Minecraft ⚔️', steps: [
+        'Используй заготовку pixel(x, y, col) со стороной кубика 25 пикселей.',
+        'В цикле for i in range(6): нарисуй 6 голубых кубиков лезвия по диагонали: pixel(-50 + i * 25, -50 + i * 25, "cyan").',
+        'В начале меча добавь коричневую рукоять (-75, -75) и золотую гарду!'
+    ], vis: 'pixel_sword' },
+    { l: 3, type: 'code', tag: 'Код Проекта Урока 3', title: 'Собираем Алмазный меч по координатам', desc: 'Продолжаем код после функции pixel(x, y, col):', code: `# Алмазное лезвие (6 кубиков по диагонали)\nfor i in range(6):\n    pixel(-50 + i * 25, -50 + i * 25, "cyan")\n\n# Рукоять меча\npixel(-75, -75, "saddlebrown")\n\n# Золотая гарда\npixel(-50, -75, "gold")\npixel(-75, -50, "gold")\n\nt.hideturtle()\nturtle.done()`, vis: 'pixel_sword' },
+    { l: 3, type: 'theory', tag: 'Теория 6', title: 'Подписываем свой рисунок: команда t.write()', bullets: [
+        ['Черепашка умеет писать красивый текст!', 'Команда t.write("Привет!") выводит любую надпись прямо на холсте.'],
+        ['Настраиваем крупный шрифт', 't.write("Мой Смайлик", align="center", font=("Arial", 20, "bold"))'],
+        ['Отлично для открыток и игр', 'Теперь ты можешь подписать своё имя или название меча внизу экрана!']
+    ], vis: 'smiley' },
+    { l: 3, type: 'code', tag: 'Пример текста', title: 'Добавляем красивую надпись на экран', desc: 'Переходим вниз экрана и выводим заголовок:', code: `t.penup()\nt.goto(0, -160)\nt.pencolor("white")\nt.write("Алмазный Меч +100", align="center", font=("Arial", 18, "bold"))`, vis: 'pixel_sword' },
+    { l: 3, type: 'task', tag: 'Бонус-задание ⭐', title: 'Пиксельное Сердечко жизни ❤️', steps: [
+        'Попробуй сложить из кубиков pixel(x, y, "deeppink") пиксельное сердечко!',
+        'Начни с нижней центральной клетки (0, -50), затем поставь 3 клетки рядом на ряд выше (-25, -25), (0, -25), (25, -25).',
+        'Добавь подпись "100 HP" под сердечком с помощью t.write()!'
+    ], vis: 'pixel_heart' },
+    { l: 3, type: 'code', tag: 'Код Бонуса ⭐', title: 'Быстрое Пиксельное Сердечко', desc: 'Собираем симметричное сердце по рядам кубиков:', code: `# Нижний уголок\npixel(0, -50, "deeppink")\n\n# Средний ряд (3 кубика)\nfor x in [-25, 0, 25]:\n    pixel(x, -25, "deeppink")\n\n# Широкий ряд (5 кубиков)\nfor x in [-50, -25, 0, 25, 50]:\n    pixel(x, 0, "deeppink")\n\n# Две верхушки сердца\npixel(-25, 25, "deeppink")\npixel(25, 25, "deeppink")`, vis: 'pixel_heart' },
+    { l: 3, type: 'theory', tag: 'Шпаргалка координат', title: 'Как быстро прикинуть координаты на глаз?', bullets: [
+        ['Обычный размер окна: от -300 до +300', 'Значит, крайний правый бортик — это около X = 280, а левый — около X = -280.'],
+        ['Верх и низ: от -250 до +250', 'Звёзды и луну рисуем наверху (Y от 100 до 220), а траву и дома — внизу (Y от -220 до -100).'],
+        ['Симметрия — это смена знака!', 'Если левый глаз в точке (-40, 30), то правый точно в (+40, 30).']
+    ], vis: 'coords_grid' },
+    { l: 3, type: 'question', tag: 'Блиц-вопрос', title: 'Что забыл программист, если при прыжке к глазу смайлика нарисовалась полоса через всё лицо?', sub: 'Какую команду нужно поставить строго перед t.goto(-40, 30)?' },
+    { l: 3, type: 'summary', tag: 'Итоги Занятия 3', title: 'Теперь ты властелин координат!', bullets: [
+        ['Абсолютные прыжки goto(x, y)', 'Умеем мгновенно переносить перо в любую точку экрана по осям X и Y.'],
+        ['Рисунки из кругов, дуг и точек', 'Собрали мишень, созвездие и эмодзи-смайлик с улыбкой дугой.'],
+        ['Пиксель-арт и подписи write()', 'Построили алмазный меч по кубикам сетки и научились выводить текст на экран!']
+    ], vis: 'pixel_sword' },
+
+    // ========================================================================
+    // ЗАНЯТИЕ 4: СОБСТВЕННЫЕ ФУНКЦИИ И СЛУЧАЙНОСТЬ (Слайды 76 - 100)
+    // ========================================================================
+    { l: 4, type: 'hero', tag: 'Занятие 4 • Функции и Random', title: 'Фабрика штампов: Функции def и магия Random', sub: 'Создаём собственные команды для звёзд, ёлок и домов, чтобы за 1 секунду выращивать целые города и галактики!', vis: 'night_city' },
+    { l: 4, type: 'theory', tag: 'Теория 1', title: 'Зачем создавать свои собственные команды (def)?', bullets: [
+        ['Представь, что тебе нужно нарисовать 20 ёлок', 'Копировать код ёлки 20 раз — программа растянется на 500 строк!'],
+        ['Учим Черепашку новому слову: def draw_tree():', 'Мы один раз объясняем Черепашке, как рисовать ёлку, и даём этой инструкции имя.'],
+        ['Вызываем как штамп!', 'Теперь достаточно написать draw_tree() — и Черепашка сама нарисует готовую ёлку!']
+    ], vis: 'trees_func' },
+    { l: 4, type: 'code', tag: 'Первая функция', title: 'Создаём команду-штамп для Звезды ⭐', desc: 'Слово def объявляет новую функцию, а внутри с отступом пишется её рецепт:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("midnightblue")\n\ndef star():\n    t.color("orange", "gold")\n    t.begin_fill()\n    for i in range(5):\n        t.forward(40)\n        t.left(144)\n    t.end_fill()\n\n# Вызываем нашу команду:\nstar()\nturtle.done()`, vis: 'star5' },
+    { l: 4, type: 'theory', tag: 'Теория 2', title: 'Умные функции с настройками: (x, y, size)', bullets: [
+        ['Передаём координаты прямо в скобках!', 'Вместо того чтобы каждый раз писать goto() снаружи, передадим x и y внутрь функции: def star(x, y, size):'],
+        ['Параметр size — размер фигуры', 'Хочешь маленькую звёздочку? Вызови star(0, 0, 15). Хочешь гигантскую? Вызови star(0, 0, 80)!'],
+        ['Одна функция — тысячи разных фигур', 'Меняя числа в скобках при вызове, мы получаем большие, средние и маленькие объекты.']
+    ], vis: 'trees_func' },
+    { l: 4, type: 'code', tag: 'Функция с параметрами', title: 'Универсальная звезда любого размера', desc: 'Теперь поставить новую звезду в любое место можно всего в ОДНУ строчку:', code: `def star(x, y, size):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.color("orange", "gold")\n    t.begin_fill()\n    for i in range(5):\n        t.forward(size)\n        t.left(144)\n    t.end_fill()\n\n# Рисуем 3 разные звезды:\nstar(-160, 40, 30)\nstar(0, 60, 75)\nstar(160, 40, 45)`, vis: 'star5' },
+    { l: 4, type: 'task', tag: 'Задание 1', title: 'Сказочный Лес из трёх разных ёлок 🌲', steps: [
+        'Создай функцию def tree(x, y, size, col):, которая переходит в точку (x, y) и рисует зелёную ёлку.',
+        'Пусть сторона треугольника кроны равна size.',
+        'Вызови функцию 3 раза по очереди, чтобы посадить маленькую, большую и среднюю ёлку разных оттенков зелёного!'
+    ], vis: 'trees_func' },
+    { l: 4, type: 'code', tag: 'Разбор Задания 1', title: 'Код функции Ёлки', desc: 'Переходим в (x, y), рисуем ствол и треугольную крону:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\n\ndef tree(x, y, size, col):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.color(col, col)\n    t.begin_fill()\n    for i in range(3):\n        t.forward(size)\n        t.left(120)\n    t.end_fill()\n\ntree(-180, -60, 80, "limegreen")\ntree(-50, -80, 130, "forestgreen")\ntree(110, -50, 65, "seagreen")\nt.hideturtle()\nturtle.done()`, vis: 'trees_func' },
+    { l: 4, type: 'theory', tag: 'Теория 3', title: 'Магия случайности: модуль random 🎲', bullets: [
+        ['import random — кубик удачи в Python', 'Подключаем модуль random в самом начале программы вместе с turtle.'],
+        ['random.randint(a, b) — случайное число', 'Например, random.randint(-200, 200) загадает случайную координату на экране!'],
+        ['random.choice(список) — случайный цвет', 'Выбирает один случайный предмет из списка: random.choice(["red", "gold", "cyan"]).']
+    ], vis: 'night_city' },
+    { l: 4, type: 'question', tag: 'Вопрос на засыпку', title: 'Что получится, если соединить функцию star(x, y, size), цикл на 40 повторений и random.randint()?', sub: 'Придётся ли нам вручную придумывать координаты для 40 звёзд?' },
+    { l: 4, type: 'task', tag: 'Задание 2', title: 'Генератор Звёздного Неба (40 случайных звёзд)', steps: [
+        'Подключи вверху import turtle и import random.',
+        'Используй нашу функцию star(x, y, size).',
+        'Запусти цикл for i in range(40):, внутри которого генерируй случайные x, y и size и вызывай star(x, y, size)!'
+    ], vis: 'starry_sky' },
+    { l: 4, type: 'code', tag: 'Разбор Задания 2', title: 'Код случайного звездопада', desc: 'Каждый запуск программы создаёт совершенно новое неповторимое небо:', code: `import turtle\nimport random\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("#090d16")\n\ndef star(x, y, sz, col):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.color(col, col)\n    t.begin_fill()\n    for i in range(5):\n        t.forward(sz)\n        t.left(144)\n    t.end_fill()\n\ncolors = ["gold", "white", "cyan", "khaki"]\nfor i in range(40):\n    rx = random.randint(-260, 260)\n    ry = random.randint(-180, 200)\n    rsz = random.randint(10, 28)\n    star(rx, ry, rsz, random.choice(colors))\n\nt.hideturtle()\nturtle.done()`, vis: 'starry_sky' },
+    { l: 4, type: 'checkpoint', tag: 'Физкультминутка • 45 мин', title: 'Перерыв для глаз! Смотрим вдаль 🔭', sub: 'Поморгай 15 раз, сделай круговые движения плечами и дай глазам отдохнуть от ярких звёзд.' },
+    { l: 4, type: 'theory', tag: 'Теория 4', title: 'Секрет быстрой отрисовки: turtle.tracer(0)', bullets: [
+        ['Когда на экране 500 деталей', 'Даже на скорости speed(0) Черепашка тратит пару секунд на перерисовку каждого окна в домах.'],
+        ['turtle.tracer(0) — режим супер-мага', 'Черепашка прячет процесс рисования за кулисами и просчитывает весь рисунок в памяти мгновенно!'],
+        ['turtle.update() — показать готовый шедевр', 'Пишем перед turtle.done(), чтобы вся картина появилась на экране за долю секунды!']
+    ], vis: 'night_city' },
+    { l: 4, type: 'theory', tag: 'Теория 5', title: 'Как нарисовать настоящий полумесяц Луны? 🌙', bullets: [
+        ['Никаких сложных формул — используем хитрость!', 'Сначала рисуем полный жёлтый круг Луны: t.dot(80, "gold").'],
+        ['Накладываем сверху круг цвета неба!', 'Сдвигаемся чуть правее и выше на 15 пикселей и ставим круг цвета ночного фона: t.dot(75, "#090d16")!'],
+        ['Получается идеальный серп полумесяца', 'Тёмный круг «откусывает» кусочек жёлтого диска, оставляя красивый месяц!']
+    ], vis: 'crescent_moon' },
+    { l: 4, type: 'code', tag: 'Пример полумесяца', title: 'Функция для Луны за 6 строк', desc: 'Оптическая иллюзия двух кругов:', code: `def draw_moon(x, y):\n    t.penup()\n    t.goto(x, y)\n    t.dot(80, "gold")     # Светящийся диск\n    t.goto(x + 18, y + 10)\n    t.dot(74, "#090d16")  # Тень цвета неба`, vis: 'crescent_moon' },
+    { l: 4, type: 'task', tag: 'Проект Урока 4', title: 'Ночной Мегаполис со светящимися окнами 🌆', steps: [
+        'Слой 1 (Небо): Рассыпь 50 маленьких белых точек-звёзд и нарисуй золотой полумесяц.',
+        'Слой 2 (Дома): Напиши функцию building(x, width, height), которая рисует тёмный силуэт небоскрёба снизу экрана.',
+        'Слой 3 (Окна): Поставь в ряд 6 небоскрёбов случайной высоты с жёлтыми огоньками окон!'
+    ], vis: 'night_city' },
+    { l: 4, type: 'code', tag: 'Код Проекта (Часть 1)', title: 'Функция небоскрёба с окнами', desc: 'Рисуем прямоугольную башню и зажигаем внутри жёлтые огоньки окон:', code: `def building(x, w, h):\n    t.penup()\n    t.goto(x, -220)\n    t.pendown()\n    t.color("#334155", "#1e293b")\n    t.begin_fill()\n    for i in range(2):\n        t.forward(w)\n        t.left(90)\n        t.forward(h)\n        t.left(90)\n    t.end_fill()\n    # Огоньки окон внутри дома:\n    for wy in range(-190, -220 + h - 20, 30):\n        for wx in range(x + 15, x + w - 10, 25):\n            t.penup()\n            t.goto(wx, wy)\n            col = random.choice(["gold", "gold", "#0f172a"])\n            t.dot(10, col)`, vis: 'night_city' },
+    { l: 4, type: 'code', tag: 'Код Проекта (Часть 2)', title: 'Собираем весь Ночной Город', desc: 'Добавляем звёзды, Луну и строим улицу из 6 случайных небоскрёбов:', code: `# 1. Звёзды на небе\nfor i in range(50):\n    t.penup()\n    t.goto(random.randint(-280, 280), random.randint(0, 230))\n    t.dot(random.randint(2, 5), "white")\n\n# 2. Полумесяц Луны\nt.goto(180, 150)\nt.dot(70, "gold")\nt.goto(195, 160)\nt.dot(65, "#090d16")\n\n# 3. Улица небоскрёбов\nfor bx in range(-270, 220, 85):\n    bh = random.randint(140, 290)\n    building(bx, 75, bh)\n\nt.hideturtle()\nturtle.update()\nturtle.done()`, vis: 'night_city' },
+    { l: 4, type: 'task', tag: 'Бонус-задание ⭐', title: 'Салют над ночным городом! 🎆', steps: [
+        'Напиши функцию firework(x, y, col), которая из одной точки в небе рисует 12 разлетающихся лучей.',
+        'На каждом луче Черепашка шагает вперёд на 35, ставит точку, возвращается назад на 35 и поворачивает на 30°.',
+        'Запусти в небе над крышами 3 разноцветных залпа салюта!'
+    ], vis: 'fireworks_show' },
+    { l: 4, type: 'code', tag: 'Код Бонуса ⭐', title: 'Функция Праздничного Салюта', desc: 'Добавь этот блок перед turtle.update():', code: `def firework(x, y, col):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.pencolor(col)\n    t.pensize(2)\n    for i in range(12):\n        t.forward(35)\n        t.dot(5, "white")\n        t.backward(35)\n        t.left(30)\n\nfirework(-120, 140, "deeppink")\nfirework(20, 170, "cyan")\nfirework(-30, 110, "lime")`, vis: 'fireworks_show' },
+    { l: 4, type: 'theory', tag: 'Полезный совет', title: 'Почему важен порядок слоёв в рисунке?', bullets: [
+        ['Сначала фон и дальний план!', 'Звёзды и Луна находятся далеко в небе, поэтому мы рисуем их самыми первыми.'],
+        ['Затем здания и деревья', 'Высокие крыши домов красиво перекрывают нижние звёзды, создавая ощущение глубины.'],
+        ['В самом конце — окна и передний план', 'То, что нарисовано последним, всегда лежит поверх предыдущих фигур!']
+    ], vis: 'night_city' },
+    { l: 4, type: 'question', tag: 'Вопрос на понимание', title: 'Зачем в функции салюта Черепашка делает forward(35), а сразу после этого — backward(35)?', sub: 'Что бы произошло, если бы она не возвращалась в центр взрыва?' },
+    { l: 4, type: 'theory', tag: 'Эксперимент', title: 'Что можно поменять в своём городе?', bullets: [
+        ['Киберпанк-город', 'Сделай окна не жёлтыми, а неоново-розовыми ("deeppink") и бирюзовыми ("cyan")!'],
+        ['Закатное небо', 'Поменяй фон с тёмно-синего на пурпурный ("indigo") или тёмно-алый.'],
+        ['Антенны на крышах', 'Нарисуй на верхушках небоскрёбов шпили с красными маячками dot(6, "red")!']
+    ], vis: 'night_city' },
+    { l: 4, type: 'code', tag: 'Мини-шпаргалка', title: 'Главные команды 4-го урока', desc: 'Сохрани себе эту памятку:', code: `import random\n\n# 1. Создание своей функции:\ndef my_shape(x, y, size):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.circle(size)\n\n# 2. Случайное число и выбор:\nn = random.randint(10, 100)\nc = random.choice(["red", "blue", "gold"])`, vis: 'trees_func' },
+    { l: 4, type: 'summary', tag: 'Итоги Занятия 4', title: 'Половина курса позади! Мы научились:', bullets: [
+        ['Создавать свои функции def', 'Упаковали фигуры в удобные команды-штампы с параметрами координат и размера.'],
+        ['Управлять случайностью random', 'Автоматически рассыпали десятки звёзд, выбирали случайные цвета и высоту зданий.'],
+        ['Строить многослойные сцены', 'Собрали настоящий процедурный Ночной Мегаполис с мгновенным рендером tracer(0)!']
+    ], vis: 'night_city' },
+
+    // ========================================================================
+    // ЗАНЯТИЕ 5: МИЛЛИОНЫ ЦВЕТОВ RGB И НЕОНОВЫЕ МИРЫ (Слайды 101 - 125)
+    // ========================================================================
+    { l: 5, type: 'hero', tag: 'Занятие 5 • Палитра RGB', title: '16 миллионов оттенков: Магия RGB и Неоновый Арт', sub: 'Как светятся пиксели монитора, секретный режим colormode(255), плавные переливы цвета и гипнотические порталы', vis: 'neon_tunnel' },
+    { l: 5, type: 'theory', tag: 'Теория 1', title: 'Откуда в мониторе берутся миллионы цветов?', bullets: [
+        ['Три маленьких фонарика в каждом пикселе', 'Экран монитора или телефона состоит из крошечных лампочек трёх цветов: Red (Красный), Green (Зелёный) и Blue (Синий).'],
+        ['Яркость от 0 до 255', 'Каждую лампочку можно выключить (0) или включить на полную мощь (255).'],
+        ['Смешиваем лучи света!', 'Красный + Зелёный лучи дают яркий Жёлтый! А если включить все три на максимум (255, 255, 255) — получится чисто Белый!']
+    ], vis: 'rgb_circles' },
+    { l: 5, type: 'code', tag: 'Таблица рецептов RGB', title: 'Как включить режим RGB в Черепашке?', desc: 'Всего одна команда turtle.colormode(255) открывает доступ к 16 миллионам цветов:', code: `import turtle\n\nt = turtle.Turtle()\nturtle.colormode(255)  # Включаем режим 0..255!\n\n# Примеры рецептов цвета (R, G, B):\nt.pencolor(255, 0, 0)    # Чистый Красный\nt.pencolor(0, 255, 0)    # Чистый Зелёный\nt.pencolor(0, 0, 255)    # Чистый Синий\nt.pencolor(255, 255, 0)  # Солнечный Жёлтый\nt.pencolor(0, 255, 255)  # Неоновый Голубой\nt.pencolor(255, 0, 255)  # Розовый Неон`, vis: 'rgb_circles' },
+    { l: 5, type: 'theory', tag: 'Теория 2', title: 'Что такое градиент (плавный перелив цвета)?', bullets: [
+        ['Когда один цвет мягко превращается в другой', 'Как на закате неба: синий цвет постепенно становится фиолетовым, затем розовым и золотым.'],
+        ['Меняем число цвета в цикле!', 'В цикле for i in range(200): число i растёт на каждом шаге: 0, 1, 2, 3...'],
+        ['Подставляем i прямо в цвет!', 'Команда t.pencolor(255, i, 0) начнёт рисовать красным (255, 0, 0) и плавно дойдёт до жёлтого (255, 200, 0)!']
+    ], vis: 'gradient_bar' },
+    { l: 5, type: 'task', tag: 'Задание 1', title: 'Светящаяся неоновая полоса (Градиент Заката)', steps: [
+        'Включи turtle.colormode(255) и сделай фон чёрным turtle.bgcolor("black").',
+        'Установи большую толщину пера t.pensize(40) и отведи черепашку влево t.goto(-120, 0).',
+        'В цикле for i in range(250): задавай цвет t.pencolor(250, i, 100) и шагай вперёд по 1 пикселю!'
+    ], vis: 'gradient_bar' },
+    { l: 5, type: 'code', tag: 'Разбор Задания 1', title: 'Код плавного перелива', desc: 'На каждом миллиметре пути цвет меняется на один оттенок:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\nturtle.colormode(255)\n\nt.penup()\nt.goto(-125, 0)\nt.pendown()\nt.pensize(50)\n\nfor i in range(250):\n    t.pencolor(250, i, 250 - i)\n    t.forward(1)\n\nt.hideturtle()\nturtle.done()`, vis: 'gradient_bar' },
+    { l: 5, type: 'question', tag: 'Загадка про RGB', title: 'Какая ошибка появится, если передать в t.pencolor(300, 0, 0) число больше 255?', sub: 'Помни: максимальная яркость светодиода — ровно 255!' },
+    { l: 5, type: 'theory', tag: 'Теория 3', title: 'Неоновый 3D-портал: соединяем градиент и спираль!', bullets: [
+        ['Вспоминаем закрученную спираль (89°)', 'На 2-м занятии мы видели, что поворот на 89° вместо 90° закручивает квадраты в туннель.'],
+        ['Добавляем плавный перелив RGB!', 'Если в цикле из 120 шагов ставить цвет t.pencolor(255 - i * 2, i * 2, 255), туннель засветится неоном!'],
+        ['Выглядит как компьютерная графика из кино', 'На чёрном фоне тонкие цветные линии создают потрясающую оптическую иллюзию глубины.']
+    ], vis: 'neon_tunnel' },
+    { l: 5, type: 'task', tag: 'Задание 2', title: 'Гипнотический Неоновый Портал 🌀', steps: [
+        'Настрой чёрный фон, скорость t.speed(0) и режим turtle.colormode(255).',
+        'Запусти цикл for i in range(120): (так как 120 * 2 = 240, мы не выйдем за предел 255!).',
+        'Внутри цикла меняй цвет t.pencolor(255 - i * 2, i * 2, 240), шагай t.forward(i * 2) и поворачивай t.left(89).'
+    ], vis: 'neon_tunnel' },
+    { l: 5, type: 'code', tag: 'Разбор Задания 2', title: 'Код Неонового Портала', desc: 'Переход от ярко-розового в центре к бирюзовому по краям:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\nturtle.colormode(255)\nt.pensize(2)\n\nfor i in range(120):\n    r = 255 - i * 2\n    g = i * 2\n    b = 240\n    t.pencolor(r, g, b)\n    t.forward(i * 2.5)\n    t.left(89)\n\nt.hideturtle()\nturtle.done()`, vis: 'neon_tunnel' },
+    { l: 5, type: 'theory', tag: 'Теория 4', title: 'Секретные углы для разных форм порталов!', bullets: [
+        ['Угол 89° или 91° — Квадратный портал', 'Четыре закрученных рукава спирали.'],
+        ['Угол 121° — Треугольный вихрь-пропеллер', 'Потому что у треугольника угол 120°, а +1 градус заставляет его вращаться!'],
+        ['Угол 61° — Шестиугольный кристалл', 'А угол 145° превращает спираль в сияющую звезду!']
+    ], vis: 'neon_tunnel' },
+    { l: 5, type: 'task', tag: 'Задание 3', title: 'Эксперимент: Кристаллический Цветок (угол 121°)', steps: [
+        'Поменяй угол поворота в своём коде на t.left(121).',
+        'Попробуй огненную палитру цвета: r = 255, g = i * 2, b = 50 (переход от красного к золотому).',
+        'Посмотри, как изменилась геометрия узора!'
+    ], vis: 'crystal_121' },
+    { l: 5, type: 'code', tag: 'Разбор Задания 3', title: 'Код Огненного Кристалла (121°)', desc: 'Всего пара изменений в числах — и перед нами совершенно новый арт:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\nturtle.colormode(255)\nt.pensize(2)\n\nfor i in range(120):\n    t.pencolor(255, i * 2, 40)\n    t.forward(i * 2.5)\n    t.left(121)  # Треугольный вихрь!\n\nt.hideturtle()\nturtle.done()`, vis: 'crystal_121' },
+    { l: 5, type: 'checkpoint', tag: 'Физкультминутка • 45 мин', title: 'Глазам нужен отдых после неоновых спиралей! 🌿', sub: 'Обязательно отведи взгляд от экрана на 2 минуты, поморгай и посмотри на зелёные или спокойные предметы вокруг.' },
+    { l: 5, type: 'theory', tag: 'Теория 5', title: 'Рисуем кругами: Спирограф из неоновых колец', bullets: [
+        ['Что если в цикле рисовать не прямые линии, а круги?', 'Вместо t.forward() напишем внутри цикла команду круга t.circle(i)!'],
+        ['Круги растут и поворачиваются', 'На каждом шаге радиус круга увеличивается, а Черепашка поворачивается на 10 или 15 градусов.'],
+        ['Эффект светящегося лотоса', 'Пересекающиеся цветные окружности создают объёмный космический цветок.']
+    ], vis: 'neon_lotus' },
+    { l: 5, type: 'task', tag: 'Проект Урока 5', title: 'Космический Лотос (Неоновый Спирограф) 🌸', steps: [
+        'Включи быстрый режим t.speed(0) и turtle.colormode(255).',
+        'В цикле for i in range(100): задавай цвет t.pencolor(50, i * 2, 255 - i * 2).',
+        'Рисуй круг растущего радиуса t.circle(40 + i) и поворачивай на t.left(15)!'
+    ], vis: 'neon_lotus' },
+    { l: 5, type: 'code', tag: 'Код Проекта Урока 5', title: 'Светящийся Спирограф из 100 колец', desc: 'Для мгновенного результата можно включить turtle.tracer(0):', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\nturtle.colormode(255)\n\nfor i in range(100):\n    t.pencolor(80, i * 2, 255 - i * 2)\n    t.circle(30 + i)\n    t.left(15)\n\nt.hideturtle()\nturtle.done()`, vis: 'neon_lotus' },
+    { l: 5, type: 'theory', tag: 'Теория 6', title: 'Случайный RGB-цвет: миллион оттенков в random!', bullets: [
+        ['Загадываем все 3 числа случайно!', 'r = random.randint(0, 255), g = random.randint(0, 255), b = random.randint(0, 255)'],
+        ['Нежные пастельные или кислотные цвета', 'Если брать числа только от 150 до 255 — все цвета будут яркими и светлыми, без тёмных и грязных оттенков!'],
+        ['Идеально для конфетти и пузырей', 'Каждый кружок на экране получит свой уникальный оттенок.']
+    ], vis: 'bubbles_art' },
+    { l: 5, type: 'task', tag: 'Бонус-задание ⭐', title: 'Экран мыльных пузырей (100 случайных оттенков)', steps: [
+        'Используй цикл на 80 шагов и модуль random.',
+        'На каждом шаге прыгай в случайную точку экрана и генерируй яркий RGB-цвет (от 100 до 255).',
+        'Ставь кружок t.dot() случайного размера от 15 до 60 пикселей!'
+    ], vis: 'bubbles_art' },
+    { l: 5, type: 'code', tag: 'Код Бонуса ⭐', title: 'Генератор неонового конфетти', desc: 'Используем только яркие значения каналов от 100 до 255:', code: `import turtle\nimport random\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("#090d16")\nturtle.colormode(255)\nt.penup()\n\nfor i in range(80):\n    x = random.randint(-260, 260)\n    y = random.randint(-200, 200)\n    r = random.randint(100, 255)\n    g = random.randint(100, 255)\n    b = random.randint(100, 255)\n    t.goto(x, y)\n    t.dot(random.randint(15, 55), (r, g, b))\n\nt.hideturtle()\nturtle.done()`, vis: 'bubbles_art' },
+    { l: 5, type: 'theory', tag: 'Шпаргалка палитр', title: 'Три готовых рецепта красивых градиентов (на 100 шагов)', bullets: [
+        ['Киберпанк (Розовый -> Голубой)', 't.pencolor(255 - i * 2, i * 2, 255)'],
+        ['Огненный закат (Красный -> Жёлтый)', 't.pencolor(255, i * 2, 30)'],
+        ['Изумрудное море (Синий -> Зелёный)', 't.pencolor(20, i * 2, 255 - i * 2)']
+    ], vis: 'neon_tunnel' },
+    { l: 5, type: 'question', tag: 'Блиц-вопрос', title: 'Какой цвет получится на экране, если написать t.pencolor(0, 0, 0)?', sub: 'Подсказка: все три лампочки (красная, зелёная и синяя) полностью выключены!' },
+    { l: 5, type: 'theory', tag: 'Творческая лаборатория', title: 'Как придумать свой собственный узор?', bullets: [
+        ['Попробуй чередовать forward и circle', 'Внутри одного цикла делай шаг вперёд, рисуй маленький кружок и поворачивай!'],
+        ['Меняй толщину пера', 'Тонкие линии pensize(1) дают изящную паутинку, а толстые pensize(4) — плотный неоновый свет.'],
+        ['Сохраняй лучшие комбинации углов', 'Пригодится для финального проекта на 8-м занятии!']
+    ], vis: 'neon_tunnel' },
+    { l: 5, type: 'code', tag: 'Мини-шпаргалка', title: 'Главный шаблон RGB-урока', desc: 'Всегда включай colormode(255) перед использованием чисел:', code: `import turtle\n\nt = turtle.Turtle()\nturtle.colormode(255)  # Обязательная строка!\n\n# Задаём цвет тремя числами (Red, Green, Blue):\nt.pencolor(255, 100, 200)`, vis: 'rgb_circles' },
+    { l: 5, type: 'summary', tag: 'Итоги Занятия 5', title: 'Мы приручили свет и цвет!', bullets: [
+        ['Цветовая модель RGB (0..255)', 'Поняли, как смешиваются красный, зелёный и синий лучи на экране монитора.'],
+        ['Плавные градиенты в цикле', 'Научились плавно менять оттенки на каждом шаге с помощью счётчика i.'],
+        ['Неоновые порталы и спирографы', 'Создали светящиеся 3D-воронки и космические цветы из колец!']
+    ], vis: 'neon_tunnel' },
+
+    // ========================================================================
+    // ЗАНЯТИЕ 6: УПРАВЛЕНИЕ С КЛАВИАТУРЫ И МЫШКИ (Слайды 126 - 150)
+    // ========================================================================
+    { l: 6, type: 'hero', tag: 'Занятие 6 • Интерактив', title: 'Оживляем программу! Управление клавишами и мышкой', sub: 'Как управлять Черепашкой стрелками на клавиатуре, рисовать салюты по клику мыши и создать свой графический пульт!', vis: 'Interactive_keys' },
+    { l: 6, type: 'theory', tag: 'Теория 1', title: 'До этого программа работала сама. А как играть с ней?', bullets: [
+        ['Что такое События (Events)?', 'Нажатие клавиши на клавиатуре или щелчок кнопкой мышки в программировании называются «событиями».'],
+        ['Привязываем функцию к кнопке!', 'Мы можем сказать Черепашке: «Когда игрок нажмёт стрелку ВВЕРХ — сделай шаг вперёд!»'],
+        ['Окно начинает слушать тебя', 'Команда turtle.listen() включает «уши» программы, чтобы она ловила твои нажатия.']
+    ], vis: 'Interactive_keys' },
+    { l: 6, type: 'code', tag: 'Первый интерактив', title: 'Учим Черепашку шагать по нажатию Пробела', desc: 'Запусти код и понажимай клавишу Пробел (Space) на клавиатуре:', code: `import turtle\n\nt = turtle.Turtle()\nt.shape("turtle")\nt.pensize(4)\nt.pencolor("limegreen")\n\n# 1. Функция действия:\ndef step():\n    t.forward(30)\n\n# 2. Привязываем функцию к клавише "space":\nturtle.listen()\nturtle.onkey(step, "space")  # Без скобок у step!\n\nturtle.done()`, vis: 'Interactive_keys' },
+    { l: 6, type: 'theory', tag: 'Теория 2', title: 'Важная деталь: почему внутри onkey пишем step БЕЗ скобок?', bullets: [
+        ['Если написать step() со скобками', 'Тогда Черепашка шагнёт сразу при запуске программы, не дожидаясь нажатия кнопки.'],
+        ['Пишем только имя функции: onkey(step, "space")', 'Мы просто сообщаем название команды, которую нужно вызвать ТОЛЬКО в момент нажатия клавиши!'],
+        ['Как называются стрелки клавиатуры?', '"Up" (Вверх), "Down" (Вниз), "Left" (Влево), "Right" (Вправо) — пишутся с большой буквы!']
+    ], vis: 'Interactive_keys' },
+    { l: 6, type: 'task', tag: 'Задание 1', title: 'Джойстик для Черепашки: управление 4 стрелками 🎮', steps: [
+        'Создай 4 маленькие функции: go_up(), go_down(), turn_left(), turn_right().',
+        'Привяжи их через turtle.onkey() к клавишам "Up", "Down", "Left", "Right".',
+        'Попробуй нарисовать на экране свои инициалы или лабиринт, управляя Черепашкой с клавиатуры!'
+    ], vis: 'Interactive_keys' },
+    { l: 6, type: 'code', tag: 'Разбор Задания 1', title: 'Код полного управления стрелками', desc: 'Теперь Черепашка слушается тебя как персонаж в компьютерной игре:', code: `import turtle\n\nt = turtle.Turtle()\nt.shape("turtle")\nt.pensize(4)\nt.pencolor("dodgerblue")\n\ndef go_up():\n    t.forward(25)\n\ndef go_down():\n    t.backward(25)\n\ndef turn_left():\n    t.left(30)\n\ndef turn_right():\n    t.right(30)\n\nturtle.listen()\nturtle.onkey(go_up, "Up")\nturtle.onkey(go_down, "Down")\nturtle.onkey(turn_left, "Left")\nturtle.onkey(turn_right, "Right")\n\nturtle.done()`, vis: 'Interactive_keys' },
+    { l: 6, type: 'theory', tag: 'Теория 3', title: 'Добавляем горячие клавиши для смены цвета и очистки!', bullets: [
+        ['Клавиши цифр и букв: "1", "2", "3", "c"', 'Нажал "1" — перо стало красным! Нажал "2" — зелёным! Нажал "3" — золотым!'],
+        ['Команда t.clear() — Ластик!', 'Привяжи функцию очистки экрана к клавише "c" (Clear), чтобы в любой момент стереть художества и начать заново.'],
+        ['Настоящий графический планшет', 'Ты управляешь и движением, и палитрой прямо во время работы программы!']
+    ], vis: 'Interactive_keys' },
+    { l: 6, type: 'task', tag: 'Задание 2', title: 'Апгрейд пульта: Цветные кнопки и Ластик 🎨', steps: [
+        'Добавь в свой код функции set_red(), set_green(), set_gold() и clear_screen().',
+        'Привяжи их к клавишам "1", "2", "3" и "c".',
+        'А на клавишу "space" (Пробел) повесь команду ставить яркий кружок t.dot(30)!'
+    ], vis: 'Interactive_keys' },
+    { l: 6, type: 'code', tag: 'Разбор Задания 2', title: 'Код переключения цветов и ластика', desc: 'Добавляем эти функции к нашему джойстику:', code: `def set_red():\n    t.pencolor("crimson")\n\ndef set_green():\n    t.pencolor("limegreen")\n\ndef set_gold():\n    t.pencolor("gold")\n\ndef clear_screen():\n    t.clear()  # Стирает весь рисунок!\n\nturtle.onkey(set_red, "1")\nturtle.onkey(set_green, "2")\nturtle.onkey(set_gold, "3")\nturtle.onkey(clear_screen, "c")`, vis: 'Interactive_keys' },
+    { l: 6, type: 'question', tag: 'Вопрос группе', title: 'Почему при нажатии на букву "c" программа иногда не реагирует?', sub: 'Подсказка: проверь, какая раскладка клавиатуры сейчас включена на компьютере (Английская EN или Русская RU)!' },
+    { l: 6, type: 'checkpoint', tag: 'Физкультминутка • 45 мин', title: 'Перерыв! Даём отдохнуть глазам и пальцам 🖐️', sub: 'Отложи клавиатуру и мышку, потянись вверх и посмотри вдаль за окно на 2 минуты.' },
+    { l: 6, type: 'theory', tag: 'Теория 4', title: 'Супер-фишка: Реакция на КЛИК МЫШКОЙ! 🖱️', bullets: [
+        ['Команда turtle.onscreenclick(функция)', 'Ловит щелчок левой кнопкой мышки в любом месте окна!'],
+        ['Автоматически передаёт координаты (x, y)!', 'Функция обязательно должна принимать два параметра: def draw_here(x, y): — это точное место, куда кликнул игрок!'],
+        ['Кликнул — и в этом месте выросла звезда или цветок!', 'Экран превращается в волшебный холст.']
+    ], vis: 'star5' },
+    { l: 6, type: 'code', tag: 'Пример клика мышкой', title: 'Телепортация и круги по щелчку мыши', desc: 'Кликай в разных местах экрана — Черепашка будет прыгать туда и ставить яркие круги:', code: `import turtle\nimport random\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("#0b1021")\n\ncolors = ["deeppink", "cyan", "gold", "lime", "orange"]\n\ndef paint_dot(x, y):\n    t.penup()\n    t.goto(x, y)\n    t.dot(random.randint(20, 60), random.choice(colors))\n\nturtle.onscreenclick(paint_dot)\nturtle.done()`, vis: 'bubbles_art' },
+    { l: 6, type: 'task', tag: 'Проект Урока 6', title: 'Интерактивное Шоу Фейерверков по клику мыши! 🎆', steps: [
+        'Сделай ночной фон неба turtle.bgcolor("#090d16") и быструю черепашку.',
+        'Напиши функцию boom(x, y):, которая переходит в точку клика (x, y) и выбирает случайный цвет.',
+        'Внутри функции нарисуй салют из 12 разлетающихся лучей со светящимися точками на концах!',
+        'Привяжи функцию к клику мышки через turtle.onscreenclick(boom).'
+    ], vis: 'fireworks_show' },
+    { l: 6, type: 'code', tag: 'Код Проекта Урока 6', title: 'Запускаем салюты кликом мышки!', desc: 'Каждый щелчок мыши по ночному небу зажигает новый яркий фейерверк:', code: `import turtle\nimport random\n\nt = turtle.Turtle()\nt.speed(0)\nt.hideturtle()\nturtle.bgcolor("#090d16")\n\ncolors = ["gold", "deeppink", "cyan", "lime", "orange"]\n\ndef boom(x, y):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.pencolor(random.choice(colors))\n    t.pensize(2)\n    size = random.randint(30, 70)\n    for i in range(12):\n        t.forward(size)\n        t.dot(6, "white")\n        t.backward(size)\n        t.left(30)\n\nturtle.onscreenclick(boom)\nturtle.done()`, vis: 'fireworks_show' },
+    { l: 6, type: 'theory', tag: 'Теория 5', title: 'Команда t.stamp() — Черепашка оставляет свой отпечаток!', bullets: [
+        ['Штампик в форме черепашки', 'Когда ты вызываешь t.stamp(), Черепашка оставляет на холсте свою цветную копию-отпечаток!'],
+        ['Можно менять цвет перед каждым штампом', 'Кликнул мышкой — в месте клика осталась синяя, золотая или розовая черепашка!'],
+        ['Весёлый способ украсить рисунок', 'Отпечатки стираются обычной командой t.clear().']
+    ], vis: 'turtle_stamps' },
+    { l: 6, type: 'task', tag: 'Бонус-задание ⭐', title: 'Поляна Штампов Черепашек по клику', steps: [
+        'Сделай так, чтобы при клике мышки Черепашка поворачивалась на случайный угол, меняла цвет и ставила свой отпечаток t.stamp()!',
+        'А по нажатию клавиши "c" — очищала экран.'
+    ], vis: 'turtle_stamps' },
+    { l: 6, type: 'code', tag: 'Код Бонуса ⭐', title: 'Разноцветные черепашки по клику мыши', desc: 'Попробуй покликать по экрану:', code: `import turtle\nimport random\n\nt = turtle.Turtle()\nt.shape("turtle")\nt.speed(0)\nt.penup()\n\ncols = ["red", "gold", "lime", "cyan", "deeppink", "orange"]\n\ndef stamp_here(x, y):\n    t.goto(x, y)\n    t.setheading(random.randint(0, 360))\n    t.color(random.choice(cols))\n    t.stamp()\n\nturtle.onscreenclick(stamp_here)\nturtle.done()`, vis: 'turtle_stamps' },
+    { l: 6, type: 'theory', tag: 'Рисование мышкой', title: 'А можно ли тянуть линию вслед за курсором мышки?', bullets: [
+        ['Команда t.ondrag(t.goto)', 'Если написать эту строчку, ты сможешь зажать саму Черепашку левой кнопкой мыши и водить её по экрану как кисточку!'],
+        ['Как в настоящем Paint!', 'Линия будет тянуться ровно за твоей рукой.']
+    ], vis: 'Interactive_keys' },
+    { l: 6, type: 'code', tag: 'Пример Кисточки', title: 'Превращаем Черепашку в кисточку для рисования мышкой', desc: 'Всего 7 строк кода для собственного Paint:', code: `import turtle\n\nt = turtle.Turtle()\nt.shape("circle")\nt.pensize(5)\nt.pencolor("deeppink")\nt.speed(0)\n\nt.ondrag(t.goto)  # Зажми кружок мышкой и рисуй!\nturtle.done()`, vis: 'Interactive_keys' },
+    { l: 6, type: 'question', tag: 'Блиц-проверка', title: 'Чем отличается команда turtle.onkey() от turtle.onscreenclick()?', sub: 'Какая из них отвечает за клавиатуру, а какая — за мышку?' },
+    { l: 6, type: 'theory', tag: 'Идеи для экспериментов', title: 'Что ещё можно повесить на кнопки?', bullets: [
+        ['На клавишу "s" — рисовать звезду', 'Управляешь черепашкой стрелками, дошёл до нужного места, нажал "s" — появилась звезда!'],
+        ['На клавишу "h" — строить домик', 'Нажал кнопку — вырос целый дом из Занятия 1!'],
+        ['На клавишу "Up" — увеличивать толщину пера', 'Делать кисточку толще или тоньше прямо на ходу.']
+    ], vis: 'Interactive_keys' },
+    { l: 6, type: 'code', tag: 'Шпаргалка Урока 6', title: 'Главные команды интерактива', desc: 'Сохрани себе в заметки:', code: `# 1. Клавиатура:\nturtle.listen()\nturtle.onkey(my_func, "space")\n\n# 2. Клик мышкой по экрану:\ndef click_func(x, y):\n    t.goto(x, y)\n\nturtle.onscreenclick(click_func)`, vis: 'Interactive_keys' },
+    { l: 6, type: 'summary', tag: 'Итоги Занятия 6', title: 'Наши программы ожили!', bullets: [
+        ['Управление с клавиатуры onkey()', 'Научили Черепашку ездить по стрелкам, менять цвета по цифрам и стирать экран ластиком.'],
+        ['Клики мышкой onscreenclick()', 'Запустили интерактивное шоу фейерверков и штампов в точках щелчка мыши.'],
+        ['Кисточка ondrag()', 'Узнали, как рисовать от руки прямо курсором мышки!']
+    ], vis: 'Interactive_keys' },
+
+    // ========================================================================
+    // ЗАНЯТИЕ 7: МИНИ-ИГРЫ И БОЛЬШАЯ ГОНКА ЧЕРЕПАШЕК (Слайды 151 - 175)
+    // ========================================================================
+    { l: 7, type: 'hero', tag: 'Занятие 7 • Мини-игры', title: 'Несколько Черепашек на экране: Большая Гонка! 🏁', sub: 'Как создать сразу 3 или 4 черепашки-соперницы, нарисовать гоночный стадион и запрограммировать азартный забег до финиша!', vis: 'race_game' },
+    { l: 7, type: 'theory', tag: 'Теория 1', title: 'А можно ли позвать на экран сразу НЕСКОЛЬКО черепашек?', bullets: [
+        ['Да! Хоть десять штук сразу!', 'Каждой черепашке мы просто даём своё имя переменной: t1 = turtle.Turtle(), t2 = turtle.Turtle(), t3 = turtle.Turtle().'],
+        ['У каждой свой цвет и свои координаты', 'Первая черепашка может быть красной и стоять сверху, а вторая — синей и стоять снизу!'],
+        ['Идеально для игр и соревнований', 'Черепашки могут бегать наперегонки или рисовать картину вместе!']
+    ], vis: 'race_game' },
+    { l: 7, type: 'code', tag: 'Три черепашки сразу', title: 'Создаём трёх разноцветных черепашек', desc: 'Каждая черепашка слушается команд со своим именем (t1, t2, t3):', code: `import turtle\n\nt1 = turtle.Turtle("turtle")\nt1.color("red")\nt1.penup()\nt1.goto(-150, 60)\n\nt2 = turtle.Turtle("turtle")\nt2.color("dodgerblue")\nt2.penup()\nt2.goto(-150, 0)\n\nt3 = turtle.Turtle("turtle")\nt3.color("limegreen")\nt3.penup()\nt3.goto(-150, -60)\n\nturtle.done()`, vis: 'race_game' },
+    { l: 7, type: 'theory', tag: 'Теория 2', title: 'Готовим проект «Черепашьи Бега»: Архитектура игры', bullets: [
+        ['Этап 1: Рисуем беговые дорожки и Финиш', 'Художник-судья чертит стартовую линию слева (X = -180) и финишную черту справа (X = 180).'],
+        ['Этап 2: Выводим 3 черепашек на старт', 'Красная, Синяя и Зелёная черепашки встают на свои дорожки и готовятся к старту.'],
+        ['Этап 3: Случайный бег и проверка победителя!', 'В цикле каждая черепашка шагает вперёд на random.randint(2, 10) пикселей. Кто первым пересечёт X = 180 — победил!']
+    ], vis: 'race_game' },
+    { l: 7, type: 'task', tag: 'Задание 1 (Этап 1)', title: 'Строим Гоночный Стадион и линию Финиша 🏟️', steps: [
+        'Сделай тёмный фон космодрома turtle.bgcolor("#0f172a").',
+        'Нарисуй белую вертикальную линию СТАРТА в точке X = -180 (сверху вниз от Y = 120 до Y = -120).',
+        'Нарисуй золотую линию ФИНИША справа в точке X = 180 и подпиши сверху "ФИНИШ" через write()!'
+    ], vis: 'race_game' },
+    { l: 7, type: 'code', tag: 'Разбор Задания 1', title: 'Код разметки Гоночного Стадиона', desc: 'Черепашка-судья ref быстро рисует старт и финиш:', code: `import turtle\n\nturtle.bgcolor("#0f172a")\nref = turtle.Turtle()\nref.speed(0)\nref.pensize(4)\n\n# Линия СТАРТА (слева)\nref.pencolor("white")\nref.penup()\nref.goto(-180, 120)\nref.pendown()\nref.goto(-180, -120)\n\n# Линия ФИНИША (справа)\nref.pencolor("gold")\nref.penup()\nref.goto(180, 120)\nref.pendown()\nref.goto(180, -120)\nref.hideturtle()`, vis: 'race_game' },
+    { l: 7, type: 'task', tag: 'Задание 2 (Этап 2)', title: 'Выводим трёх гонщиков на старт! 🐢🐢🐢', steps: [
+        'После разметки стадиона создай трёх гонщиков: t1 (красный), t2 (голубой), t3 (зелёный).',
+        'Поставь их на линию старта X = -180 на разных высотах: Y = 60, Y = 0 и Y = -60.',
+        'Опусти им перья pendown(), чтобы за каждым бегуном тянулся цветной след!'
+    ], vis: 'race_game' },
+    { l: 7, type: 'code', tag: 'Разбор Задания 2', title: 'Код расстановки гонщиков', desc: 'Ставим всех трёх участников ровно на линию X = -180:', code: `t1 = turtle.Turtle("turtle")\nt1.color("crimson")\nt1.pensize(3)\nt1.penup()\nt1.goto(-180, 60)\nt1.pendown()\n\nt2 = turtle.Turtle("turtle")\nt2.color("deepskyblue")\nt2.pensize(3)\nt2.penup()\nt2.goto(-180, 0)\nt2.pendown()\n\nt3 = turtle.Turtle("turtle")\nt3.color("limegreen")\nt3.pensize(3)\nt3.penup()\nt3.goto(-180, -60)\nt3.pendown()`, vis: 'race_game' },
+    { l: 7, type: 'theory', tag: 'Теория 3', title: 'Как узнать, кто пересёк финиш? Команда t.xcor() и условие if!', bullets: [
+        ['t1.xcor() — спрашиваем текущую координату X', 'Эта команда возвращает число: где именно по горизонтали сейчас находится первая черепашка.'],
+        ['Проверка условия: if t1.xcor() >= 180:', 'Слово if означает «ЕСЛИ». Если координата X гонщика достигла 180 (линии финиша) — он победил!'],
+        ['Команда break — Стоп игра!', 'Мгновенно останавливает цикл гонки, как только определился первый чемпион.']
+    ], vis: 'race_game' },
+    { l: 7, type: 'question', tag: 'Интрига урока', title: 'Кто победит в гонке, если все три черепашки шагают через random.randint(1, 8)?', sub: 'Можно ли заранее угадать победителя до запуска программы?' },
+    { l: 7, type: 'task', tag: 'Задание 3 (Этап 3)', title: 'Запускаем гонку и награждаем Чемпиона! 🏆', steps: [
+        'Подключи import random в начале программы.',
+        'Напиши цикл for step in range(150):, внутри которого каждая черепашка шагает вперёд на random.randint(1, 8).',
+        'Проверяй через if t1.xcor() >= 180:, кто первым дошёл до финиша, и выводи поздравление на экран!'
+    ], vis: 'race_game' },
+    { l: 7, type: 'code', tag: 'Полный код Гонки (Часть 2)', title: 'Цикл забега и определение победителя', desc: 'Добавь этот цикл после создания трёх черепашек и болей за своего фаворита:', code: `import random\n\nwinner = ""\nfor step in range(150):\n    t1.forward(random.randint(1, 8))\n    t2.forward(random.randint(1, 8))\n    t3.forward(random.randint(1, 8))\n\n    if t1.xcor() >= 180:\n        winner = "Победила КРАСНАЯ черепашка!"\n        break\n    if t2.xcor() >= 180:\n        winner = "Победила СИНЯЯ черепашка!"\n        break\n    if t3.xcor() >= 180:\n        winner = "Победила ЗЕЛЁНАЯ черепашка!"\n        break\n\nref.penup()\nref.goto(0, -170)\nref.write(winner, align="center", font=("Arial", 16, "bold"))\nturtle.done()`, vis: 'race_game' },
+    { l: 7, type: 'checkpoint', tag: 'Физкультминутка • 45 мин', title: 'Гонка прошла успешно! Разминаем глаза и шею 🏅', sub: 'Поболели за черепашек — теперь встаньте, потянитесь и посмотрите в окно на 2 минуты.' },
+    { l: 7, type: 'theory', tag: 'Теория 4', title: 'Танец Победы: как отпраздновать финиш?', bullets: [
+        ['Победитель крутится вокруг себя!', 'После финиша чемпион может сделать победный разворот на 360 градусов в цикле.'],
+        ['Добавляем 4-ю Золотую черепашку!', 'Ты легко можешь расширить трассу и добавить четвёртого или пятого бегуна.'],
+        ['Турбо-ускорение на трассе', 'Иногда можно давать редкий супер-рывок!']
+    ], vis: 'race_game' },
+    { l: 7, type: 'task', tag: 'Мини-Игра 2', title: 'Игра «Поймай Черепашку мышкой!» 🎯', steps: [
+        'Давай сделаем ещё одну весёлую игру: Черепашка при клике на неё убегает в случайное место экрана!',
+        'Используем команду t.onclick(catch_me), которая срабатывает при клике ИМЕННО по панцирю самой черепашки!',
+        'Считаем очки и пишем рекорд на экране!'
+    ], vis: 'catch_turtle' },
+    { l: 7, type: 'code', tag: 'Код Игры «Поймай Черепашку»', title: 'Кликай прямо по Черепашке, чтобы набрать очки!', desc: 'Отличная тренировка реакции и пример игровой механики:', code: `import turtle\nimport random\n\nt = turtle.Turtle("turtle")\nt.shapesize(2.5)  # Делаем черепашку крупной!\nt.color("lime")\nt.speed(0)\nt.penup()\nturtle.bgcolor("#0b1021")\n\nscore = 0\n\ndef catch_me(x, y):\n    global score\n    score = score + 1\n    t.clear()\n    t.write("Очки: " + str(score), font=("Arial", 16, "bold"))\n    t.goto(random.randint(-220, 220), random.randint(-160, 160))\n\nt.onclick(catch_me)\nturtle.done()`, vis: 'catch_turtle' },
+    { l: 7, type: 'theory', tag: 'Теория 5', title: 'Секрет команды t.shapesize(2.5) — Гигантская Черепашка!', bullets: [
+        ['Меняем размер самой черепашки!', 'По умолчанию размер курсора равен 1. Если написать t.shapesize(3), черепашка станет в 3 раза крупнее!'],
+        ['Разные формы курсора t.shape()', 'Кроме "turtle", можно выбрать "circle" (круг), "square" (квадрат), "triangle" (треугольник) или "arrow" (стрелка).'],
+        ['Удобно для кликеров и аркад', 'По крупной черепашке гораздо интереснее кликать мышкой в игре!']
+    ], vis: 'catch_turtle' },
+    { l: 7, type: 'task', tag: 'Бонус-задание ⭐', title: 'Синхронное рисование двумя Черепашками-зеркалами', steps: [
+        'Создай двух черепашек: левую t1 (розовую) и правую t2 (голубую).',
+        'В одном цикле заставляй t1 поворачивать налево t1.left(59), а t2 — зеркально направо t2.right(59)!',
+        'Посмотри, какой симметричный двойной узор они нарисуют вместе!'
+    ], vis: 'mirror_turtles' },
+    { l: 7, type: 'code', tag: 'Код Бонуса ⭐', title: 'Две зеркальные Черепашки-близняшки', desc: 'Две черепашки синхронно чертят крылья бабочки:', code: `import turtle\n\nturtle.bgcolor("black")\n\nt1 = turtle.Turtle()\nt1.speed(0)\nt1.pencolor("deeppink")\n\nt2 = turtle.Turtle()\nt2.speed(0)\nt2.pencolor("cyan")\n\nfor i in range(60):\n    t1.forward(i * 3)\n    t1.left(59)\n    t2.forward(i * 3)\n    t2.right(59)\n\nt1.hideturtle()\nt2.hideturtle()\nturtle.done()`, vis: 'mirror_turtles' },
+    { l: 7, type: 'theory', tag: 'Подготовка к финалу', title: 'Анонс Занятия 8: Наш Финальный Творческий Проект! 🚀', bullets: [
+        ['На следующем уроке ты — главный разработчик!', 'Ты сам выбираешь тему своего финального проекта из 4 крутых направлений (или предлагаешь свою идею!).'],
+        ['Используем всё, чему научились за 7 занятий', 'Фигуры, циклы, координаты, функции, случайность random, цвета RGB или кнопки клавиатуры/мышки.'],
+        ['В конце — выставка работ!', 'Каждый покажет свой проект группе на большом экране.']
+    ], vis: 'project_showcase' },
+    { l: 7, type: 'theory', tag: 'Выбор тем', title: '4 темы для Финального Проекта на выбор (Занятие 8)', bullets: [
+        ['Тема 1: «Сказочный Пейзаж / Город мечты» 🌆', 'Космодром, замок, ночной город или подводный мир с помощью функций и random.'],
+        ['Тема 2: «Неоновый Калейдоскоп / Мандала» 🌸', 'Светящийся генеративный арт с градиентами RGB и вложенными циклами.'],
+        ['Тема 3: «Интерактивная Рисовалка / Салют» 🎮', 'Управление с клавиатуры и мышки, штампы и спецэффекты по клику.'],
+        ['Тема 4: «Черепашьи Бега / Мини-игра» 🏁', 'Собственный стадион с гонщиками или игра-кликер со счётом очков!']
+    ], vis: 'project_showcase' },
+    { l: 7, type: 'question', tag: 'Опрос группы', title: 'Какая из 4 тем финального проекта нравится тебе больше всего?', sub: 'Подумай уже сейчас, что именно ты захочешь запрограммировать на 8-м занятии!' },
+    { l: 7, type: 'code', tag: 'Шпаргалка Урока 7', title: 'Главные фишки для мини-игр', desc: 'Полезные команды из сегодняшнего занятия:', code: `# Несколько черепашек:\nt1 = turtle.Turtle("turtle")\nt2 = turtle.Turtle("turtle")\n\n# Крупный размер черепашки:\nt1.shapesize(2.5)\n\n# Проверка координаты X для финиша:\nif t1.xcor() >= 180:\n    print("Финиш!")`, vis: 'race_game' },
+    { l: 7, type: 'theory', tag: 'Чек-лист перед финалом', title: 'Что делает проект по-настоящему крутым?', bullets: [
+        ['Красивый цвет фона turtle.bgcolor()', 'На тёмно-синем или чёрном фоне яркие цвета смотрятся в 10 раз эффектнее, чем на скучном белом!'],
+        ['Крупная подпись автора t.write()', 'Например: «Проект Артёма: Космический Город 2026».'],
+        ['Аккуратный код с функциями и циклами', 'Используй циклы for и свои функции def, чтобы код был чистым и понятным.']
+    ], vis: 'project_showcase' },
+    { l: 7, type: 'summary', tag: 'Итоги Занятия 7', title: 'Ты умеешь создавать настоящие мини-игры!', bullets: [
+        ['Несколько черепашек одновременно', 'Научились управлять сразу тремя черепашками на одном экране.'],
+        ['Проверка победы через if и xcor()', 'Построили гоночный стадион и написали честный алгоритм определения чемпиона.'],
+        ['Игра-кликер onclick()', 'Сделали интерактивную убегающую черепашку с подсчётом очков!']
+    ], vis: 'race_game' },
+
+    // ========================================================================
+    // ЗАНЯТИЕ 8: ФИНАЛЬНЫЙ ПРОЕКТ ПО ВЫБРАННОЙ ТЕМЕ (Слайды 176 - 200)
+    // ========================================================================
+    { l: 8, type: 'hero', tag: 'Занятие 8 • Финальный Проект 🏆', title: 'Фестиваль Проектов: Создай свой шедевр на Python!', sub: 'Выбираем любимую тему, собираем собственный проект по шагам, украшаем деталями и показываем результат группе!', vis: 'project_showcase' },
+    { l: 8, type: 'theory', tag: 'План Занятия 8', title: 'Как устроена наша Проектная Мастерская сегодня?', bullets: [
+        ['1. Выбор темы (5 минут)', 'Выбираешь один из 4 готовых треков или придумываешь свою идею по изученным темам.'],
+        ['2. Создание основы проекта (30 минут)', 'Пишем главный код по шагам с помощью удобных карточек-шпаргалок на слайдах.'],
+        ['3. Тюнинг и украшение (25 минут)', 'Добавляем свои уникальные цвета, звёзды, интерактив и подпись автора.'],
+        ['4. Парад проектов (15 минут)', 'Дружно смотрим работы друг друга и празднуем окончание курса! 🎉']
+    ], vis: 'project_showcase' },
+    { l: 8, type: 'theory', tag: 'Правила Проекта', title: '4 главных ингредиента твоего Финального Проекта', bullets: [
+        ['Ингредиент 1: Фон и Палитра 🎨', 'Красивый цвет окна bgcolor() и минимум 3-4 сочетающихся цвета в рисунке.'],
+        ['Ингредиент 2: Циклы for 🔄', 'Используй циклы для повторения фигур, звёзд, окон или узоров.'],
+        ['Ингредиент 3: Своя функция def или Интерактив ⚡', 'Создай хотя бы одну собственную функцию def или добавь реакцию на клик/клавиши.'],
+        ['Ингредиент 4: Авторская подпись ✍️', 'Выведи название своего проекта на экран через команду t.write()!']
+    ], vis: 'project_showcase' },
+    { l: 8, type: 'task', tag: 'Выбор Темы • Шаг 1', title: 'Выбери свой Трек из 4 направлений!', steps: [
+        'ТРЕК А (Слайды 180-182): «Космическая База / Сказочный Пейзаж» (Функции + Координаты + Random).',
+        'ТРЕК Б (Слайды 183-185): «Супер-Мандала / Неоновый Портал» (Вложенные циклы + Палитра RGB 255).',
+        'ТРЕК В (Слайды 186-188): «Интерактивный Космос / Рисовалка» (Клики мышкой + Клавиатура).',
+        'ТРЕК Г (Слайды 189-191): «Большие Черепашьи Бега ДЕЛЮКС» (Несколько черепашек + Счёт + Стадион).'
+    ], vis: 'project_showcase' },
+
+    // ТРЕК А
+    { l: 8, type: 'theory', tag: 'Трек А • Пейзаж и Космос', title: 'Трек А: «Космическая База или Ночной Город» 🌆🚀', bullets: [
+        ['Этап 1: Небо и Космос', 'Закрашиваем фон, рассыпаем циклом 30 случайных звёзд и рисуем планету или полумесяц.'],
+        ['Этап 2: Главные постройки', 'Пишем функцию для рисования домов, замковых башен или космических ракет.'],
+        ['Этап 3: Детали и подпись', 'Добавляем светящиеся иллюминаторы и название картины внизу экрана!']
+    ], vis: 'space_rockets' },
+    { l: 8, type: 'code', tag: 'Трек А • Шаблон кода (Часть 1)', title: 'Основа для Трека А: Звёздное небо', desc: 'Можешь взять этот стартовый шаблон и доработать его по своему вкусу:', code: `import turtle\nimport random\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("#090d16")\n\ndef star(x, y, sz):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.color("gold")\n    t.begin_fill()\n    for i in range(5):\n        t.forward(sz)\n        t.left(144)\n    t.end_fill()\n\nfor i in range(30):\n    rx = random.randint(-260, 260)\n    ry = random.randint(-50, 220)\n    star(rx, ry, random.randint(8, 18))`, vis: 'starry_sky' },
+    { l: 8, type: 'code', tag: 'Трек А • Шаблон кода (Часть 2)', title: 'Добавляем функцию Космической Ракеты', desc: 'Вызываем функцию несколько раз в разных координатах:', code: `def rocket(x, y, col):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.color("white", col)\n    t.begin_fill()\n    for i in range(2):\n        t.forward(50)\n        t.left(90)\n        t.forward(100)\n        t.left(90)\n    t.end_fill()\n    t.penup()\n    t.goto(x + 25, y + 55)\n    t.dot(22, "cyan")\n\nrocket(-140, -150, "royalblue")\nrocket(0, -100, "purple")\nrocket(140, -150, "seagreen")\nt.hideturtle()\nturtle.done()`, vis: 'space_rockets' },
+
+    // ТРЕК Б
+    { l: 8, type: 'theory', tag: 'Трек Б • Неоновый Арт', title: 'Трек Б: «Космическая Мандала и Неоновый Портал» 🌸✨', bullets: [
+        ['Этап 1: Настройка RGB 255', 'Включаем чёрный фон, скорость speed(0) и полноцветный режим turtle.colormode(255).'],
+        ['Этап 2: Многослойный узор', 'Соединяем сразу ДВА узора: сначала рисуем большой фоновый портал, а в центре — яркий цветок-спирограф!'],
+        ['Этап 3: Звёздная рамка', 'Вокруг мандалы можно расставить золотые точки или подписать название работы.']
+    ], vis: 'neon_lotus' },
+    { l: 8, type: 'code', tag: 'Трек Б • Шаблон кода (Часть 1)', title: 'Основа для Трека Б: Двухслойная Неоновая Мандала', desc: 'Слой 1 — внешнее сияние из неоновых кругов:', code: `import turtle\n\nt = turtle.Turtle()\nt.speed(0)\nturtle.bgcolor("black")\nturtle.colormode(255)\nt.pensize(2)\n\n# СЛОЙ 1: Неоновый лотос из кругов\nfor i in range(72):\n    t.pencolor(255 - i * 3, i * 3, 240)\n    t.circle(90)\n    t.left(5)`, vis: 'neon_lotus' },
+    { l: 8, type: 'code', tag: 'Трек Б • Шаблон кода (Часть 2)', title: 'Добавляем центральную звезду и подпись', desc: 'Поверх первого узора рисуем золотую спираль в центре:', code: `# СЛОЙ 2: Золотая спиральная звезда в центре\nfor i in range(50):\n    t.pencolor(255, 200, i * 4)\n    t.forward(i * 3)\n    t.left(145)\n\n# Подпись автора:\nt.penup()\nt.goto(0, -230)\nt.pencolor(0, 255, 255)\nt.write("Неоновая Галактика", align="center", font=("Arial", 18, "bold"))\n\nt.hideturtle()\nturtle.done()`, vis: 'star_spiral' },
+
+    // ТРЕК В
+    { l: 8, type: 'theory', tag: 'Трек В • Интерактив и Мышка', title: 'Трек В: «Волшебный Холст: Салюты, Звёзды и Пульт» 🎮🎆', bullets: [
+        ['Этап 1: Клики мышкой onscreenclick', 'При клике левой кнопкой мыши в этой точке вырастает случайный фейерверк, цветок или планета.'],
+        ['Этап 2: Управление клавишами onkey', 'По нажатию клавиши "c" экран очищается для новой картины!'],
+        ['Этап 3: Меню подсказок на экране', 'Вверху экрана пишем через write() инструкцию для игрока.']
+    ], vis: 'fireworks_show' },
+    { l: 8, type: 'code', tag: 'Трек В • Шаблон кода (Часть 1)', title: 'Основа для Трека В: Салюты по клику', desc: 'Интерактивная программа, реагирующая на мышку и клавиатуру:', code: `import turtle\nimport random\n\nt = turtle.Turtle()\nt.speed(0)\nt.hideturtle()\nturtle.bgcolor("#090d16")\n\ncols = ["gold", "deeppink", "cyan", "lime", "orange"]\n\ndef magic_click(x, y):\n    t.penup()\n    t.goto(x, y)\n    t.pendown()\n    t.pencolor(random.choice(cols))\n    t.pensize(2)\n    sz = random.randint(25, 60)\n    for i in range(12):\n        t.forward(sz)\n        t.dot(5, "white")\n        t.backward(sz)\n        t.left(30)`, vis: 'fireworks_show' },
+    { l: 8, type: 'code', tag: 'Трек В • Шаблон кода (Часть 2)', title: 'Привязка клавиш и инструкция на экране', desc: 'Добавляем очистку по клавише "c" и заголовок:', code: `def clear_sky():\n    t.clear()\n\nt.penup()\nt.goto(0, 210)\nt.pencolor("white")\nt.write("Кликай мышкой! Клавиша C — очистить", align="center", font=("Arial", 14, "bold"))\n\nturtle.listen()\nturtle.onscreenclick(magic_click)\nturtle.onkey(clear_sky, "c")\nturtle.done()`, vis: 'Interactive_keys' },
+
+    // ТРЕК Г
+    { l: 8, type: 'theory', tag: 'Трек Г • Мини-игра Гонки', title: 'Трек Г: «Космические Черепашьи Бега ДЕЛЮКС» 🏁🐢', bullets: [
+        ['Этап 1: Красивая арена', 'Рисуем 4 дорожки, стартовую и финишную черту и звёздное табло сверху.'],
+        ['Этап 2: Четыре гонщика', 'Создаём 4 разноцветных черепашек и ставим их на старт.'],
+        ['Этап 3: Забег и Празднование', 'Запускаем цикл гонки, определяем чемпиона, пишем его имя на табло и крутим в победном танце!']
+    ], vis: 'race_game' },
+    { l: 8, type: 'code', tag: 'Трек Г • Шаблон кода (Часть 1)', title: 'Основа для Трека Г: Стадион и 4 гонщика', desc: 'Создаём финишную линию и четырёх черепашек:', code: `import turtle\nimport random\n\nturtle.bgcolor("#0f172a")\nref = turtle.Turtle()\nref.speed(0)\nref.hideturtle()\nref.pencolor("gold")\nref.pensize(4)\nref.penup()\nref.goto(180, 140)\nref.pendown()\nref.goto(180, -140)\n\ncolors = ["crimson", "deepskyblue", "limegreen", "gold"]\ny_pos = [90, 30, -30, -90]\nturtles = []\n\nfor i in range(4):\n    p = turtle.Turtle("turtle")\n    p.color(colors[i])\n    p.pensize(3)\n    p.penup()\n    p.goto(-180, y_pos[i])\n    p.pendown()\n    turtles.append(p)`, vis: 'race_game' },
+    { l: 8, type: 'code', tag: 'Трек Г • Шаблон кода (Часть 2)', title: 'Забег и награждение победителя', desc: 'Проверяем в цикле всех четырёх бегунов:', code: `go = True\nwhile go:\n    for p in turtles:\n        p.forward(random.randint(2, 9))\n        if p.xcor() >= 180:\n            win_col = p.pencolor()\n            ref.penup()\n            ref.goto(0, 160)\n            ref.write("Чемпион: " + win_col + "!", align="center", font=("Arial", 18, "bold"))\n            for i in range(12):\n                p.left(30)\n            go = False\n            break\n\nturtle.done()`, vis: 'race_game' },
+
+    // ОБЩИЕ СЛАЙДЫ РАБОТЫ НАД ПРОЕКТОМ И ЗАЩИТЫ (192 - 200)
+    { l: 8, type: 'checkpoint', tag: 'Самостоятельная сборка • 30 мин', title: 'Время кода! Собираем и улучшаем свой проект 💻', sub: 'Зови преподавателя, если нужна подсказка. Не бойся экспериментировать с цветами, размерами и координатами!' },
+    { l: 8, type: 'theory', tag: 'Чек-лист полировки', title: 'Проверь свой проект перед показом: 5 шагов к идеалу', bullets: [
+        ['1. Спрятан ли лишний курсор?', 'Добавь t.hideturtle() в конце рисования, чтобы стрелочка не торчала посреди картины.'],
+        ['2. Быстро ли рисуется арт?', 'Проверь, включена ли максимальная скорость t.speed(0) или буфер turtle.tracer(0).'],
+        ['3. Есть ли заголовок на экране?', 'Подпиши название проекта и своё имя красивым шрифтом через t.write()!'],
+        ['4. Контрастные ли цвета?', 'Тёмный фон + яркие неоновые или золотые линии всегда выглядят выигрышно.']
+    ], vis: 'project_showcase' },
+    { l: 8, type: 'code', tag: 'Универсальная шпаргалка', title: 'Шпаргалка всех команд курса на одном экране', desc: 'Подглядывай сюда во время работы над своим проектом:', code: `t.forward(100)               # Шаг вперёд\nt.left(90)                   # Поворот налево\nt.circle(50)                 # Круг радиуса 50\nt.dot(20, "gold")            # Цветная точка\nt.penup()                    # Поднять перо\nt.goto(x, y)                 # Перейти в точку (x, y)\nt.pendown()                  # Опустить перо\nt.color("red", "yellow")     # Цвет контура и заливки\nt.begin_fill()               # Начать заливку\nt.end_fill()                 # Завершить заливку\nfor i in range(10):          # Цикл повторений\ndef my_func(x, y):           # Своя функция\nrandom.randint(-200, 200)    # Случайное число`, vis: 'project_showcase' },
+    { l: 8, type: 'theory', tag: 'Подготовка к показу', title: 'Как круто презентовать свой проект за 1 минуту? 🎤', bullets: [
+        ['1. Назови имя своего проекта', 'Например: «Мой проект называется "Космическая станция Сатурн-5"».'],
+        ['2. Запусти программу на экране', 'Покажи, как Черепашка рисует твою картину или как работает управление/гонка.'],
+        ['3. Расскажи про главную фишку в коде!', 'Какие циклы, функции или цвета RGB ты использовал и что понравилось делать больше всего.']
+    ], vis: 'project_showcase' },
+    { l: 8, type: 'question', tag: 'Парад Проектов! 🎉', title: 'Выставка открыта! Кто хочет показать свой проект первым?', sub: 'Поддерживаем каждого участника аплодисментами! 👏' },
+    { l: 8, type: 'theory', tag: 'Итоги всего курса', title: 'Посмотри, какой огромный путь мы прошли за 8 занятий!', bullets: [
+        ['Занятия 1–2: Фигуры и Циклы', 'От первого простого квадрата до правильных многоугольников, звёзд и радужных спиралей.'],
+        ['Занятия 3–4: Координаты, Функции и Random', 'Научились строить пиксельные мечи, создавать свои функции def и генерировать целые города.'],
+        ['Занятия 5–8: RGB, Интерактив, Игры и Проект', 'Освоили 16 миллионов цветов, управление с клавиатуры и мышки, гонки и создали свой проект!']
+    ], vis: 'project_showcase' },
+    { l: 8, type: 'theory', tag: 'Что учить дальше?', title: 'Куда двигаться дальше в мире Python? 🚀', bullets: [
+        ['Библиотека Pygame — настоящие 2D-игры!', 'Следующая ступень после Turtle: создание платформеров, стрелялок и аркад со звуком и картинками.'],
+        ['Чат-боты и приложения', 'На Python пишут умных ботов для Telegram и Discord, сайты и нейросети.'],
+        ['Главный фундамент уже у тебя в руках!', 'Переменные, циклы for, условия if, функции def и координаты работают во всех языках программирования!']
+    ], vis: 'project_showcase' },
+    { l: 8, type: 'question', tag: 'Рефлексия курса', title: 'Какое задание из всех 8 уроков запомнилось тебе больше всего?', sub: 'Смайлик, Алмазный меч, Ночной город, Неоновый портал, Салюты по клику или Гонки черепашек?' },
+    { l: 8, type: 'summary', tag: 'Финал курса • Слайд 200 / 200 🏆', title: 'Поздравляем с успешным окончанием курса Python Turtle!', bullets: [
+        ['Ты — настоящий Разработчик Python! 🐍', 'Ты умеешь превращать строки кода в яркую графику, анимацию и интерактивные мини-игры.'],
+        ['Сохрани свои программы на память', 'Покажи свой финальный проект родителям и друзьям!'],
+        ['До новых встреч в мире кода! 🎉', 'Продолжай творить, экспериментировать и придумывать свои цифровые миры!']
+    ], vis: 'project_showcase' }
+];
+
+// ============================================================================
+// ЛОГИКА ОТОБРАЖЕНИЯ СЛАЙДОВ И УПРАВЛЕНИЯ ПРЕЗЕНТАЦИЕЙ
+// ============================================================================
+let currentSlideIndex = 0;
+
+const lessonThemes = {
+    0: { name: 'Python: Цифровые изображения', badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30', glow: 'bg-indigo-500/15' },
+    1: { name: 'Занятие 1: Фигуры по очереди', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', glow: 'bg-emerald-500/15' },
+    2: { name: 'Занятие 2: Циклы и Узоры', badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30', glow: 'bg-amber-500/15' },
+    3: { name: 'Занятие 3: Координаты (X, Y)', badge: 'bg-sky-500/20 text-sky-300 border-sky-500/30', glow: 'bg-sky-500/15' },
+    4: { name: 'Занятие 4: Функции и Random', badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30', glow: 'bg-purple-500/15' },
+    5: { name: 'Занятие 5: 16 млн цветов RGB', badge: 'bg-pink-500/20 text-pink-300 border-pink-500/30', glow: 'bg-pink-500/15' },
+    6: { name: 'Занятие 6: Кнопки и Мышка', badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30', glow: 'bg-cyan-500/15' },
+    7: { name: 'Занятие 7: Гонка Черепашек', badge: 'bg-orange-500/20 text-orange-300 border-orange-500/30', glow: 'bg-orange-500/15' },
+    8: { name: 'Занятие 8: Финальный Проект 🏆', badge: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40', glow: 'bg-yellow-500/15' }
+};
+
+// Безопасный однопроходный токенизатор синтаксиса Python (без пересечения HTML-тегов)
+function highlightPython(code) {
+    const tokenRegex = /(#.*)|("[^"]*"|'[^']*')|\b(import|from|def|for|in|if|else|elif|while|break|global|return|True|False)\b|\b(range|int|str|len|print|turtle|random)\b|\b(\d+(?:\.\d+)?)\b|\.([a-zA-Z_]\w*)/g;
+
+    return code.split('\n').map((line, idx) => {
+        const escaped = line
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+        const highlighted = escaped.replace(tokenRegex, (match, comment, str, kw, builtin, num, method) => {
+            if (comment) return `<span class="text-slate-500 italic">${comment}</span>`;
+            if (str) return `<span class="text-emerald-300">${str}</span>`;
+            if (kw) return `<span class="text-pink-400 font-semibold">${kw}</span>`;
+            if (builtin) return `<span class="text-sky-300 font-medium">${builtin}</span>`;
+            if (num) return `<span class="text-amber-300">${num}</span>`;
+            if (method) return `.<span class="text-indigo-300">${method}</span>`;
+            return match;
+        });
+
+        const lineNum = String(idx + 1).padStart(2, ' ');
+        return `<div class="table-row hover:bg-white/[0.02]"><span class="table-cell pr-4 select-none text-slate-600 text-right text-xs w-8">${lineNum}</span><span class="table-cell">${highlighted || ' '}</span></div>`;
+    }).join('');
+}
+
+function renderSlide(index) {
+    const s = slidesData[index];
+    const theme = lessonThemes[s.l];
+    const numStr = String(index + 1).padStart(3, '0');
+
+    // Update Header & Progress
+    document.getElementById('lesson-badge').className = `px-3.5 py-1.5 rounded-xl font-display font-bold text-xs uppercase tracking-wider border ${theme.badge}`;
+    document.getElementById('lesson-badge').innerText = s.l === 0 ? 'Введение в курс' : `Занятие ${s.l}`;
+    document.getElementById('slide-category').innerText = theme.name;
+    document.getElementById('slide-counter').innerText = `${numStr} / ${slidesData.length}`;
+    document.getElementById('progress-bar').style.width = `${((index + 1) / slidesData.length) * 100}%`;
+    document.getElementById('bg-glow').className = `absolute -top-32 -left-32 w-96 h-96 rounded-full blur-3xl pointer-events-none transition-all duration-500 ${theme.glow}`;
+
+    // Highlight active lesson tab
+    for (let i = 0; i <= 8; i++) {
+        const tab = document.getElementById(`tab-${i}`);
+        if (!tab) continue;
+        if (i === s.l) {
+            tab.className = "lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow";
+        } else {
+            tab.className = "lesson-tab px-2.5 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800";
+        }
+    }
+
+    const container = document.getElementById('slide-inner');
+    let html = '';
+
+    if (s.type === 'hero') {
+        html = `
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center h-full">
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-indigo-300 text-sm font-semibold">
+                        <span>✨</span> <span>${s.tag}</span>
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl font-bold leading-tight text-white">${s.title}</h1>
+                    <p class="text-lg sm:text-xl text-slate-300 leading-relaxed">${s.sub}</p>
+                    <div class="pt-2 flex items-center gap-4 text-xs text-slate-400 font-mono">
+                        <span class="px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10">🐍 Python 3 + Turtle</span>
+                        <span class="px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10">🎨 Теория + Практика</span>
+                    </div>
+                </div>
+                <div class="lg:col-span-5 h-64 sm:h-80 canvas-box rounded-2xl p-4 flex items-center justify-center relative">
+                    ${renderVisual(s.vis)}
+                </div>
+            </div>
+        `;
+    } else if (s.type === 'theory' || s.type === 'summary') {
+        const isSummary = s.type === 'summary';
+        const cardsHtml = s.bullets.map((b, idx) => `
+            <div class="p-4 rounded-2xl bg-slate-900/75 border ${isSummary ? 'border-emerald-500/30' : 'border-white/10'} flex items-start gap-4">
+                <div class="w-8 h-8 rounded-xl ${isSummary ? 'bg-emerald-500/20 text-emerald-300' : 'bg-indigo-500/20 text-indigo-300'} font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    ${isSummary ? '✓' : idx + 1}
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-base sm:text-lg mb-1">${b[0]}</h3>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">${b[1]}</p>
+                </div>
+            </div>
+        `).join('');
+
+        html = `
+            <div class="flex flex-col h-full justify-between">
+                <div>
+                    <span class="text-xs font-mono uppercase tracking-widest text-indigo-400 font-semibold">${s.tag}</span>
+                    <h2 class="text-2xl sm:text-4xl font-bold text-white mt-1 mb-6">${s.title}</h2>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center flex-1">
+                    <div class="lg:col-span-7 space-y-3.5">
+                        ${cardsHtml}
+                    </div>
+                    <div class="lg:col-span-5 h-60 sm:h-72 canvas-box rounded-2xl p-4 flex flex-col items-center justify-center">
+                        ${renderVisual(s.vis)}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (s.type === 'code') {
+        html = `
+            <div class="flex flex-col h-full justify-between">
+                <div>
+                    <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-semibold">${s.tag}</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">${s.title}</h2>
+                    <p class="text-slate-400 text-sm sm:text-base mt-1 mb-4">${s.desc}</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-1 min-h-0">
+                    <div class="lg:col-span-7 code-window rounded-2xl p-5 flex flex-col justify-between overflow-x-auto">
+                        <div>
+                            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                    <span class="ml-2 text-xs text-slate-400 font-mono">lesson_0${s.l}.py</span>
+                                </div>
+                                <button onclick="copySlideCode(this)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-mono transition">
+                                    📋 Скопировать код
+                                </button>
+                            </div>
+                            <pre class="text-xs sm:text-sm leading-relaxed text-slate-100 overflow-x-auto"><code>${highlightPython(s.code)}</code></pre>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-5 canvas-box rounded-2xl p-4 flex flex-col items-center justify-center relative">
+                        <div class="absolute top-3 left-4 text-[11px] font-mono text-slate-400 uppercase tracking-wider">Результат на экране:</div>
+                        <div class="w-full h-56 sm:h-64 flex items-center justify-center mt-4">
+                            ${renderVisual(s.vis)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (s.type === 'task') {
+        const stepsHtml = s.steps.map((st, idx) => `
+            <div class="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center gap-4">
+                <div class="w-8 h-8 rounded-full bg-amber-500 text-slate-950 font-extrabold flex items-center justify-center shrink-0">
+                    ${idx + 1}
+                </div>
+                <p class="text-slate-100 text-sm sm:text-base font-medium leading-relaxed">${st}</p>
+            </div>
+        `).join('');
+
+        html = `
+            <div class="flex flex-col h-full justify-between">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold uppercase tracking-wider">
+                        ⚡ Практическое задание
+                    </div>
+                    <h2 class="text-2xl sm:text-4xl font-bold text-white mt-2 mb-6">${s.title}</h2>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center flex-1">
+                    <div class="lg:col-span-7 space-y-3.5">
+                        ${stepsHtml}
+                    </div>
+                    <div class="lg:col-span-5 h-60 sm:h-72 canvas-box rounded-2xl p-4 flex flex-col items-center justify-center relative">
+                        <div class="absolute top-3 left-4 text-[11px] font-mono text-amber-300/80 uppercase">Образец цели:</div>
+                        ${renderVisual(s.vis)}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (s.type === 'question' || s.type === 'checkpoint') {
+        const isCheck = s.type === 'checkpoint';
+        html = `
+            <div class="flex flex-col items-center justify-center text-center h-full max-w-3xl mx-auto space-y-6">
+                <div class="w-20 h-20 rounded-3xl ${isCheck ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-amber-500/20 border-amber-500/40 text-amber-300'} border flex items-center justify-center text-4xl shadow-lg">
+                    ${isCheck ? '👀' : '💡'}
+                </div>
+                <span class="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono uppercase tracking-widest text-slate-300">
+                    ${s.tag}
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-bold text-white leading-tight">${s.title}</h2>
+                <p class="text-lg sm:text-2xl text-slate-300 leading-relaxed">${s.sub}</p>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
+function nextSlide() {
+    if (currentSlideIndex < slidesData.length - 1) {
+        currentSlideIndex++;
+        renderSlide(currentSlideIndex);
+    }
+}
+
+function prevSlide() {
+    if (currentSlideIndex > 0) {
+        currentSlideIndex--;
+        renderSlide(currentSlideIndex);
+    }
+}
+
+function jumpToLesson(lessonNum) {
+    const idx = slidesData.findIndex(s => s.l === lessonNum);
+    if (idx !== -1) {
+        currentSlideIndex = idx;
+        renderSlide(currentSlideIndex);
+    }
+}
+
+function jumpToSlide(idx) {
+    currentSlideIndex = idx;
+    renderSlide(currentSlideIndex);
+    document.getElementById('grid-modal').classList.add('hidden');
+    document.getElementById('grid-modal').classList.remove('flex');
+}
+
+function copySlideCode(btn) {
+    const code = slidesData[currentSlideIndex].code;
+    if (code) {
+        navigator.clipboard.writeText(code);
+        const orig = btn.innerText;
+        btn.innerText = '✅ Скопировано!';
+        setTimeout(() => btn.innerText = orig, 1500);
+    }
+}
+
+function toggleGridModal() {
+    const modal = document.getElementById('grid-modal');
+    if (modal.classList.contains('hidden')) {
+        populateGridModal();
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function populateGridModal() {
+    const list = document.getElementById('slides-grid-list');
+    list.innerHTML = slidesData.map((s, i) => {
+        const active = i === currentSlideIndex ? 'ring-2 ring-indigo-400 bg-indigo-950/80' : 'bg-slate-900/90 hover:bg-slate-800';
+        const lLabel = s.l === 0 ? 'Интро' : `Урок ${s.l}`;
+        return `
+            <button onclick="jumpToSlide(${i})" class="${active} p-3 rounded-xl border border-white/10 text-left flex flex-col justify-between transition h-24">
+                <div class="flex items-center justify-between w-full">
+                    <span class="text-[11px] font-mono font-bold text-indigo-400">#${String(i+1).padStart(3,'0')}</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400">${lLabel}</span>
+                </div>
+                <p class="text-xs font-semibold text-slate-200 line-clamp-2 leading-snug mt-1">${s.title}</p>
+            </button>
+        `;
+    }).join('');
+}
+
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+    } else if (e.key === 'Escape') {
+        const modal = document.getElementById('grid-modal');
+        if (!modal.classList.contains('hidden')) toggleGridModal();
+    }
+});
+
+// Initialize on load
+renderSlide(0);
+</script>
+</body>
+</html>
