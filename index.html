@@ -44,12 +44,105 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Режим Cinema 16:9 — скрыты верхнее и нижнее меню, контент во весь экран */
+        body.cinema-mode {
+            padding: 0 !important;
+        }
+        body.cinema-mode #top-bar,
+        body.cinema-mode #bottom-bar {
+            position: fixed;
+            left: 0; right: 0;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-8px);
+            z-index: -1;
+        }
+        body.cinema-mode #bottom-bar {
+            transform: translateY(8px);
+        }
+        body.cinema-mode #main-stage {
+            margin: 0 !important;
+            width: 100vw;
+            height: 100vh;
+        }
+        body.cinema-mode #slide-container {
+            max-width: 100% !important;
+            width: 100%;
+            height: 100%;
+            border-radius: 0 !important;
+            aspect-ratio: 16 / 9;
+            max-height: 100vh;
+            max-width: min(100vw, calc(100vh * 16 / 9));
+            margin: auto;
+        }
+
+        /* Иконка-подсказка Ctrl+X в углу при активном режиме */
+        #cinema-hint {
+            display: none;
+        }
+        body.cinema-mode #cinema-hint {
+            display: flex;
+            position: fixed;
+            bottom: 12px;
+            right: 16px;
+            z-index: 60;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: rgba(148, 163, 184, 0.5);
+            pointer-events: none;
+        }
+
+        /* Визуальная клавиатура */
+        .kb-row { display: flex; gap: 4px; margin-bottom: 4px; justify-content: center; }
+        .kb-key {
+            min-width: 34px; height: 34px; padding: 0 6px;
+            border-radius: 6px; background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #cbd5e1; font-family: 'Fira Code', monospace;
+            font-size: 12px; line-height: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: all 0.2s ease; cursor: default; user-select: none;
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.4);
+        }
+        .kb-key-wide { min-width: 68px; }
+        .kb-key-extra-wide { min-width: 120px; }
+        .kb-key-space { min-width: 240px; }
+        .kb-key-top { font-size: 10px; opacity: 0.7; }
+        .kb-key-bot { font-size: 11px; font-weight: 700; }
+        .kb-key-active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-color: #a5b4fc; color: #fff;
+            transform: scale(1.12);
+            box-shadow: 0 0 22px rgba(99, 102, 241, 0.7), inset 0 -2px 0 rgba(0,0,0,0.3);
+        }
+        .kb-key-shift {
+            background: linear-gradient(135deg, #d97706, #ea580c);
+            border-color: #fbbf24; color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 0 18px rgba(217, 119, 6, 0.7);
+        }
+        .kbd-chip {
+            padding: 6px 10px; border-radius: 10px; background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.08); color: #e2e8f0;
+            font-family: 'Fira Code', monospace; font-weight: 700; font-size: 15px;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .kbd-chip:hover { background: #334155; }
+        .kbd-chip-active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-color: #a5b4fc; color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
+        .kbd-chip-label { font-size: 10px; font-weight: 400; opacity: 0.7; margin-left: 6px; font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between p-4 md:p-6 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
 
     <!-- Top Navigation Bar -->
-    <header class="flex items-center justify-between px-6 py-3 rounded-2xl bg-slate-900/80 border border-white/10 backdrop-blur-md z-20">
+    <header id="top-bar" class="flex items-center justify-between px-6 py-3 rounded-2xl bg-slate-900/80 border border-white/10 backdrop-blur-md z-20 transition-all duration-300">
         <div class="flex items-center gap-4">
             <div id="lesson-badge" class="px-3.5 py-1.5 rounded-xl font-display font-bold text-xs uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 Занятие 1
@@ -80,6 +173,9 @@
             <button onclick="toggleAdminToolbar()" id="admin-toolbar-btn" class="hidden px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold border border-amber-500/30 transition flex items-center gap-1.5">
                 ✏️ Режим правки
             </button>
+            <button onclick="toggleKeyboardPanel()" id="keyboard-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/10 transition flex items-center gap-1.5" title="Панель символов">
+                ⌨️
+            </button>
             <button onclick="logout()" id="logout-btn" class="hidden px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/10 transition">
                 Выйти
             </button>
@@ -93,7 +189,7 @@
     </header>
 
     <!-- Main Slide Stage -->
-    <main class="flex-1 my-4 relative flex items-center justify-center overflow-hidden">
+    <main id="main-stage" class="flex-1 my-4 relative flex items-center justify-center overflow-hidden transition-all duration-300">
         <div id="slide-container" class="slide-card w-full h-full max-w-7xl rounded-3xl p-6 md:p-10 flex flex-col justify-between relative overflow-hidden transition-all duration-200">
             <!-- Dynamic Decorative Glow -->
             <div id="bg-glow" class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
@@ -105,7 +201,7 @@
     </main>
 
     <!-- Bottom Control Bar -->
-    <footer class="flex items-center justify-between px-6 py-3 rounded-2xl bg-slate-900/80 border border-white/10 backdrop-blur-md z-20">
+    <footer id="bottom-bar" class="flex items-center justify-between px-6 py-3 rounded-2xl bg-slate-900/80 border border-white/10 backdrop-blur-md z-20 transition-all duration-300">
         <div class="flex items-center gap-2">
             <button onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-semibold text-sm transition flex items-center gap-2 border border-white/10">
                 ← Назад
@@ -122,12 +218,17 @@
         </div>
 
         <div class="flex items-center gap-3 text-xs text-slate-400">
-            <span class="hidden sm:inline">Клавиши: <b>←</b> <b>→</b> или <b>Пробел</b></span>
+            <span class="hidden sm:inline">Клавиши: <b>←</b> <b>→</b> <b>Пробел</b> · <b>Ctrl+X</b> — 16:9</span>
             <button onclick="toggleFullScreen()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10" title="Во весь экран">
                 ⛶
             </button>
         </div>
     </footer>
+
+    <!-- Подсказка режима Cinema 16:9 -->
+    <div id="cinema-hint">
+        <span class="font-mono">Ctrl+X</span> — выйти из полноэкранного режима
+    </div>
 
     <!-- Modal for Login / Roles -->
     <div id="login-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 hidden flex-col items-center justify-center p-6">
@@ -253,6 +354,35 @@
         <button onclick="saveSlideEdits()" class="w-full px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition shadow-lg">
             💾 Сохранить и выйти из правки
         </button>
+    </div>
+
+    <!-- Modal for Keyboard Symbols -->
+    <div id="keyboard-modal" class="fixed inset-0 bg-slate-950/92 backdrop-blur-xl z-50 hidden flex-col items-center justify-center p-4 md:p-8">
+        <div class="w-full max-w-4xl bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col gap-5 max-h-[92vh] overflow-y-auto">
+
+            <!-- Header + Layout Switcher -->
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-xl font-bold text-white font-display flex items-center gap-2">⌨️ Как поставить нужный символ?</h2>
+                <button onclick="toggleKeyboardPanel()" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 font-bold text-sm transition">✕ Esc</button>
+            </div>
+
+            <!-- Layout tabs -->
+            <div class="flex gap-1 bg-slate-950 rounded-xl p-1 border border-white/5 w-fit mx-auto">
+                <button onclick="setKeyLayout('ru')" id="key-layout-ru" class="px-4 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white">🇷🇺 Русская</button>
+                <button onclick="setKeyLayout('en')" id="key-layout-en" class="px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">🇬🇧 English</button>
+            </div>
+
+            <!-- Symbol buttons (chips) -->
+            <div id="keyboard-symbols" class="flex flex-wrap justify-center gap-2"></div>
+
+            <!-- Visual keyboard will be injected here -->
+            <div id="keyboard-visual" class="mx-auto"></div>
+
+            <!-- Result hint -->
+            <div id="keyboard-result" class="rounded-2xl border border-white/10 bg-slate-950/60 px-5 py-4 min-h-[68px] flex items-center justify-center text-sm text-slate-400">
+                Выберите символ выше — мы подсветим, где он находится на клавиатуре
+            </div>
+        </div>
     </div>
 
     <!-- Modal for 200 Slides Overview -->
@@ -1441,7 +1571,10 @@ const slidesData = [
 // ============================================================================
 // ЛОГИКА ОТОБРАЖЕНИЯ СЛАЙДОВ И УПРАВЛЕНИЯ ПРЕЗЕНТАЦИЕЙ
 // ============================================================================
-let currentSlideIndex = 0;
+let currentSlideIndex = parseInt(sessionStorage.getItem('slideIndex') || '0');
+if (isNaN(currentSlideIndex) || currentSlideIndex < 0 || currentSlideIndex >= slidesData.length) {
+    currentSlideIndex = 0;
+}
 
 const lessonThemes = {
     0: { name: 'Python: Цифровые изображения', badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30', glow: 'bg-indigo-500/15' },
@@ -1484,6 +1617,9 @@ function renderSlide(index) {
     const s = slidesData[index];
     const theme = lessonThemes[s.l];
     const numStr = String(index + 1).padStart(3, '0');
+
+    // Save current position to sessionStorage
+    sessionStorage.setItem('slideIndex', index);
 
     // Update Header & Progress
     document.getElementById('lesson-badge').className = `px-3.5 py-1.5 rounded-xl font-display font-bold text-xs uppercase tracking-wider border ${theme.badge}`;
@@ -1575,7 +1711,7 @@ function renderSlide(index) {
                                     <span class="ml-2 text-xs text-slate-400 font-mono">lesson_0${s.l}.py</span>
                                 </div>
                                 <button onclick="copySlideCode(this)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-mono transition">
-                                    📋 Скопировать код
+                                    ${currentRole === 'admin' ? '📋 Скопировать код' : '🔒 Копирование: только админ'}
                                 </button>
                             </div>
                             <pre class="text-xs sm:text-sm leading-relaxed text-slate-100 overflow-x-auto"><code>${highlightPython(s.code)}</code></pre>
@@ -1668,6 +1804,16 @@ function jumpToSlide(idx) {
 }
 
 function copySlideCode(btn) {
+    if (currentRole !== 'admin') {
+        if (currentRole === 'user') {
+            const orig = btn.innerText;
+            btn.innerText = '🔒 Только администратор';
+            setTimeout(() => btn.innerText = '📋 Скопировать код', 2000);
+        } else {
+            toggleLoginModal();
+        }
+        return;
+    }
     const code = slidesData[currentSlideIndex].code;
     if (code) {
         navigator.clipboard.writeText(code);
@@ -1716,6 +1862,13 @@ function toggleFullScreen() {
 
 // Keyboard navigation
 document.addEventListener('keydown', (e) => {
+    // Ctrl+X — переключить режим Cinema 16:9 (скрыть верхнее/нижнее меню)
+    if (e.ctrlKey && (e.key === 'x' || e.key === 'X')) {
+        e.preventDefault();
+        toggleCinemaMode();
+        return;
+    }
+
     if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault();
         nextSlide();
@@ -1730,8 +1883,12 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Initialize on load
-renderSlide(0);
+function toggleCinemaMode() {
+    document.body.classList.toggle('cinema-mode');
+}
+
+// Initialize on load — restore saved position
+renderSlide(currentSlideIndex);
 
 // ============================================================================
 // СИСТЕМА РОЛЕЙ (user / admin) И РЕЖИМ РЕДАКТИРОВАНИЯ СЛАЙДОВ
@@ -1740,11 +1897,15 @@ renderSlide(0);
 // чтобы в исходнике он не встречался в явном виде.
 const ADMIN_PASSWORD_HASH = 'cXdlZHNh'; // base64-шифр пароля (сравнивается с btoa(введённого))
 
-let currentRole = 'guest';   // guest | user | admin
+let currentRole = sessionStorage.getItem('currentRole') || 'guest';   // guest | user | admin
 let editMode = false;
 
-// При старте проверяем роль и показываем окно входа
-toggleLoginModal();
+// При старте проверяем роль и показываем окно входа только если не восстановлено
+if (currentRole === 'guest') {
+    toggleLoginModal();
+} else {
+    updateRoleUI();
+}
 
 function toggleLoginModal() {
     const modal = document.getElementById('login-modal');
@@ -1765,6 +1926,7 @@ function showPasswordForm() {
 
 function loginAs(role) {
     currentRole = role;
+    sessionStorage.setItem('currentRole', role);
     updateRoleUI();
     toggleLoginModal();
 }
@@ -1773,6 +1935,7 @@ function loginAsAdmin() {
     const input = document.getElementById('admin-password').value;
     if (btoa(input) === ADMIN_PASSWORD_HASH) {
         currentRole = 'admin';
+        sessionStorage.setItem('currentRole', 'admin');
         updateRoleUI();
         toggleLoginModal();
         document.getElementById('admin-password').value = '';
@@ -1784,6 +1947,7 @@ function loginAsAdmin() {
 function logout() {
     currentRole = 'guest';
     editMode = false;
+    sessionStorage.removeItem('currentRole');
     updateRoleUI();
     renderSlide(currentSlideIndex);
 }
@@ -2109,6 +2273,218 @@ renderSlide = function(index) {
         renderSlideWithEdit(index);
     }
 };
+
+// ============================================================================
+// МОДАЛКА КЛАВИАТУРЫ: СИМВОЛЫ Python + ВИЗУАЛЬНАЯ РАСКЛАДКА RU/EN
+// ============================================================================
+let currentKeyLayout = 'ru';
+let selectedKeyChar = null;
+
+// Физические клавиши (id для подсветки). Каждый символ привязан к физической
+// кнопке через data-key. В обеих раскладках физически это одна и та же кнопка,
+// но подписаны они по-разному.
+const KEYBOARD_ROWS = {
+    ru: [
+        // row1: ` й ц у к е н ш щ э / - _ =
+        [{k:'q', top:'"', bot:'й'}, {k:'w', top:',', bot:'ц'}, {k:'e', top:'.', bot:'у'},
+         {k:'r', bot:'к'}, {k:'t', bot:'е'}, {k:'y', bot:'н'}, {k:'u', bot:'ш'},
+         {k:'i', bot:'щ'}, {k:'o', bot:'э'}, {k:'p', top:'/', bot:'р'},
+         {k:'bracketL', bot:'( ', top:')'}, {k:'bracketR', bot:'ъ'}],
+        // row2: ф ы в а п р о л д ж е ё
+        [{k:'shiftL', wide:true, bot:'⇧ Shift'}, {k:'a', bot:'ф'}, {k:'s', bot:'ы'},
+         {k:'d', bot:'в'}, {k:'f', bot:'а'}, {k:'g', bot:'п'}, {k:'h', bot:'р'},
+         {k:'j', bot:'о'}, {k:'k', bot:'л'}, {k:'l', bot:'д'},
+          {k:'semi', top:':', bot:'ж'}, {k:'quote', top:'!', bot:'э'}, {k:'backslash', top:'|', bot:'Ё'}],
+         // row3: я ч с м и т ь б ю . ,
+         [{k:'capslock', wide:true, bot:'CapsLock'}, {k:'z', bot:'я'}, {k:'x', bot:'ч'},
+          {k:'c', bot:'с'}, {k:'v', bot:'м'}, {k:'b', bot:'и'}, {k:'n', bot:'т'},
+          {k:'m', bot:'ь'}, {k:'comma', top:'Б', bot:','}, {k:'period', top:'Ю', bot:'.'},
+          {k:'slash', bot:'/'}],
+         [{k:'ctrlL', extraWide:true, bot:'Ctrl'}, {k:'winL', bot:'⊞'}, {k:'altL', bot:'Alt'},
+          {k:'space', space:true, bot:'Пробел'}, {k:'altR', bot:'AltGr'}, {k:'ctrlR', extraWide:true, bot:'Ctrl'}]
+     ],
+     en: [
+         [{k:'1', top:'!', bot:'1'}, {k:'2', top:'@', bot:'2'}, {k:'3', top:'#', bot:'3'},
+          {k:'4', top:'$', bot:'4'}, {k:'5', top:'%', bot:'5'}, {k:'6', top:'^', bot:'6'},
+          {k:'7', top:'&', bot:'7'}, {k:'8', top:'*', bot:'8'}, {k:'9', top:'(', bot:'9'},
+          {k:'0', top:')', bot:'0'}, {k:'minus', top:'_', bot:'-'}, {k:'equals', top:'+', bot:'='}],
+         [{k:'shiftL', wide:true, bot:'⇧ Shift'}, {k:'q', bot:'Q'}, {k:'w', bot:'W'}, {k:'e', bot:'E'},
+          {k:'r', bot:'R'}, {k:'t', bot:'T'}, {k:'y', bot:'Y'}, {k:'u', bot:'U'}, {k:'i', bot:'I'},
+          {k:'o', bot:'O'}, {k:'p', bot:'P'}, {k:'bracketL', top:'{', bot:'['}, {k:'bracketR', top:'}', bot:']'}],
+         [{k:'capslock', wide:true, bot:'CapsLock'}, {k:'a', bot:'A'}, {k:'s', bot:'S'}, {k:'d', bot:'D'},
+         {k:'f', bot:'F'}, {k:'g', bot:'G'}, {k:'h', bot:'H'}, {k:'j', bot:'J'}, {k:'k', bot:'K'},
+         {k:'l', bot:'L'}, {k:'semi', top:':', bot:';'}, {k:'quote', top:'"', bot:"'"}],
+        [{k:'shiftR', wide:true, bot:'⇧ Shift'}, {k:'backslash', top:'|', bot:'\ '},
+         {k:'comma', top:'<', bot:','}, {k:'period', top:'>', bot:'.'}, {k:'slash', top:'?', bot:'/'}],
+        [{k:'ctrlL', extraWide:true, bot:'Ctrl'}, {k:'winL', bot:'⊞'}, {k:'altL', bot:'Alt'},
+         {k:'space', space:true, bot:'Space'}, {k:'altR', bot:'AltGr'}, {k:'ctrlR', extraWide:true, bot:'Ctrl'}]
+    ]
+};
+
+// Полный набор символов для "популярных" кнопок в модалке.
+// Для каждого символа — физическая клавиша и нужен ли Shift.
+const SYMBOL_MAP = {
+    ru: [
+        { char: ',', name: 'Запятая', keyId: 'comma', shift: false },
+        { char: '.', name: 'Точка', keyId: 'period', shift: false },
+        { char: ':', name: 'Двоеточие', keyId: 'semi', shift: true },
+        { char: '"', name: 'Двойная кавычка', keyId: 'quote', shift: false },   // Э в RU верхний ряд? Нет, '"' там в q-top
+        { char: "'", name: 'Одинарная кавычка', keyId: 'quote', shift: false }, // RU не имеет отдельной апострофа на quote → совмещаем
+        { char: '(', name: 'Скобка (', keyId: 'bracketL', shift: false },
+        { char: ')', name: 'Скобка )', keyId: 'bracketL', shift: true },
+        { char: '[', name: 'Скобка [', keyId: 'bracketL', shift: false },
+        { char: ']', name: 'Скобка ]', keyId: 'bracketR', shift: false },
+        { char: '=', name: 'Знак равно', keyId: 'equals', shift: false },
+        { char: '+', name: 'Плюс', keyId: 'equals', shift: true },
+        { char: '-', name: 'Минус', keyId: 'minus', shift: false },
+        { char: '*', name: 'Звёздочка', keyId: '8', shift: true },
+        { char: '/', name: 'Слэш', keyId: 'slash', shift: false },
+        { char: '#', name: 'Решётка', keyId: '3', shift: true },
+        { char: '%', name: 'Процент', keyId: '5', shift: true }
+    ],
+    en: [
+        { char: ',', name: 'Comma', keyId: 'comma', shift: false },
+        { char: '.', name: 'Period', keyId: 'period', shift: false },
+        { char: ':', name: 'Colon', keyId: 'semi', shift: true },
+        { char: '"', name: 'Double quote', keyId: 'quote', shift: true },
+        { char: "'", name: 'Single quote', keyId: 'quote', shift: false },
+        { char: '(', name: 'Open paren', keyId: '9', shift: true },
+        { char: ')', name: 'Close paren', keyId: '0', shift: true },
+        { char: '[', name: 'Open bracket', keyId: 'bracketL', shift: false },
+        { char: ']', name: 'Close bracket', keyId: 'bracketR', shift: false },
+        { char: '=', name: 'Equals', keyId: 'equals', shift: false },
+        { char: '+', name: 'Plus', keyId: 'equals', shift: true },
+        { char: '-', name: 'Minus', keyId: 'minus', shift: false },
+        { char: '*', name: 'Asterisk', keyId: '8', shift: true },
+        { char: '/', name: 'Slash', keyId: 'slash', shift: false },
+        { char: '#', name: 'Hash', keyId: '3', shift: true },
+        { char: '%', name: 'Percent', keyId: '5', shift: true }
+    ]
+};
+
+function toggleKeyboardPanel() {
+    const modal = document.getElementById('keyboard-modal');
+    if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        renderKeyboardModal();
+    } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function setKeyLayout(layout) {
+    currentKeyLayout = layout;
+    const ruBtn = document.getElementById('key-layout-ru');
+    const enBtn = document.getElementById('key-layout-en');
+    if (layout === 'ru') {
+        ruBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white';
+        enBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+    } else {
+        ruBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+        enBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white';
+    }
+    renderKeyboardModal();
+}
+
+function renderKeyboardModal() {
+    // Chips (кнопки-символы сверху)
+    const chipsEl = document.getElementById('keyboard-symbols');
+    const symbols = SYMBOL_MAP[currentKeyLayout];
+    chipsEl.innerHTML = symbols.map((s, idx) => `
+        <button onclick="pickSymbol(${idx})" class="kbd-chip ${selectedKeyChar === s.char ? 'kbd-chip-active' : ''}" data-char="${s.char}">
+            ${s.char}<span class="kbd-chip-label">${s.name}</span>
+        </button>
+    `).join('');
+
+    // Визуальная клавиатура
+    const kbEl = document.getElementById('keyboard-visual');
+    const rows = KEYBOARD_ROWS[currentKeyLayout];
+    kbEl.innerHTML = rows.map(row => `
+        <div class="kb-row">
+            ${row.map(k => `
+                <div class="kb-key ${k.wide?'kb-key-wide':''} ${k.extraWide?'kb-key-extra-wide':''} ${k.space?'kb-key-space':''}" data-key="${k.k}">
+                    ${k.top ? `<span class="kb-key-top">${escapeHtml(k.top)}</span>` : ''}
+                    <span class="kb-key-bot">${escapeHtml(k.bot || '')}</span>
+                </div>
+            `).join('')}
+        </div>
+    `).join('');
+
+    // Если уже выбран символ — подсвечиваем его после перерисовки
+    if (selectedKeyChar) {
+        highlightSelectedSymbol();
+    }
+}
+
+function pickSymbol(idx) {
+    const symbol = SYMBOL_MAP[currentKeyLayout][idx];
+    if (!symbol) return;
+    selectedKeyChar = symbol.char;
+    // Обновляем chip active state
+    document.querySelectorAll('#keyboard-symbols .kbd-chip').forEach(chip => {
+        chip.classList.toggle('kbd-chip-active', chip.dataset.char === symbol.char);
+    });
+    highlightSelectedSymbol();
+}
+
+function highlightSelectedSymbol() {
+    const sym = SYMBOL_MAP[currentKeyLayout].find(s => s.char === selectedKeyChar);
+    if (!sym) return;
+
+    // Сбросить все подсветки
+    document.querySelectorAll('.kb-key').forEach(k => k.classList.remove('kb-key-active', 'kb-key-shift'));
+
+    // Подсветить нужную кнопку
+    const target = document.querySelector(`.kb-key[data-key="${sym.keyId}"]`);
+    if (target) target.classList.add('kb-key-active');
+
+    // Если нужен Shift — подсветить оба Shift
+    if (sym.shift) {
+        document.querySelectorAll('.kb-key[data-key="shiftL"], .kb-key[data-key="shiftR"]').forEach(s => s.classList.add('kb-key-shift'));
+    }
+
+    // Показываем результат
+    const resultEl = document.getElementById('keyboard-result');
+    const combo = sym.shift ? `Shift + ${keyLabel(sym.keyId)}` : `${keyLabel(sym.keyId)}`;
+    resultEl.innerHTML = `
+        <div class="flex flex-col items-center gap-2">
+            <div class="flex items-baseline gap-3">
+                <span class="font-mono text-white font-extrabold text-3xl leading-none">${escapeHtml(sym.char)}</span>
+                <span class="text-sm text-slate-300">${sym.name}</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-indigo-300 font-mono">
+                <span>→</span>
+                <span>${combo}</span>
+            </div>
+            <div class="text-[11px] text-slate-500">Раскладка: <b class="text-slate-300">${currentKeyLayout === 'ru' ? 'Русская' : 'English'}</b></div>
+        </div>
+    `;
+}
+
+function keyLabel(keyId) {
+    // Ищем человека-читаемую подпись клавиши в текущей раскладке
+    for (const row of KEYBOARD_ROWS[currentKeyLayout]) {
+        const k = row.find(x => x.k === keyId);
+        if (k) return k.bot || k.top || keyId;
+    }
+    return keyId;
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Закрытие модалки по Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const kbModal = document.getElementById('keyboard-modal');
+        if (kbModal && !kbModal.classList.contains('hidden')) {
+            toggleKeyboardPanel();
+        }
+    }
+});
 </script>
 </body>
 </html>
