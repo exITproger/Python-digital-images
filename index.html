@@ -103,14 +103,14 @@
             color: #cbd5e1; font-family: 'Fira Code', monospace;
             font-size: 12px; line-height: 1;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: all 0.2s ease; cursor: default; user-select: none;
+            transition: all 0.2s ease; cursor: pointer; user-select: none;
             box-shadow: inset 0 -2px 0 rgba(0,0,0,0.4);
         }
-        .kb-key-wide { min-width: 68px; }
-        .kb-key-extra-wide { min-width: 120px; }
-        .kb-key-space { min-width: 240px; }
-        .kb-key-top { font-size: 10px; opacity: 0.7; }
+        .kb-key:hover { background: #334155; border-color: rgba(255,255,255,0.2); }
+        .kb-key { width: calc(var(--u, 1) * 38px - 4px); min-width: 0; }
+        .kb-key-top { font-size: 10px; opacity: 0.7; min-height: 12px; }
         .kb-key-bot { font-size: 11px; font-weight: 700; }
+        .kb-key-label { font-size: 8.5px; font-weight: 700; opacity: 0.7; }
         .kb-key-active {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             border-color: #a5b4fc; color: #fff;
@@ -130,6 +130,7 @@
             cursor: pointer; transition: all 0.15s;
         }
         .kbd-chip:hover { background: #334155; }
+        .kbd-chip-missing { color: #fda4af; border-color: rgba(244,63,94,0.35); }
         .kbd-chip-active {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             border-color: #a5b4fc; color: #fff;
@@ -380,7 +381,8 @@
 
             <!-- Result hint -->
             <div id="keyboard-result" class="rounded-2xl border border-white/10 bg-slate-950/60 px-5 py-4 min-h-[68px] flex items-center justify-center text-sm text-slate-400">
-                Выберите символ выше — мы подсветим, где он находится на клавиатуре
+                Выберите символ выше или нажмите на любую клавишу — мы покажем, что она печатает.
+            Верхний знак на клавише — это Shift, нижний — без Shift.
             </div>
         </div>
     </div>
@@ -2280,86 +2282,177 @@ renderSlide = function(index) {
 let currentKeyLayout = 'ru';
 let selectedKeyChar = null;
 
-// Физические клавиши (id для подсветки). Каждый символ привязан к физической
-// кнопке через data-key. В обеих раскладках физически это одна и та же кнопка,
-// но подписаны они по-разному.
+// Физическая ANSI-клавиатура: в обеих раскладках это ОДНИ И ТЕ ЖЕ клавиши,
+// различаются только подписи. bot — без Shift, top — с зажатой Shift,
+// label — специальная клавиша (Tab, Ctrl и т.п.). u — ширина в юнитах ANSI.
 const KEYBOARD_ROWS = {
     ru: [
-        // row1: ` й ц у к е н ш щ э / - _ =
-        [{k:'q', top:'"', bot:'й'}, {k:'w', top:',', bot:'ц'}, {k:'e', top:'.', bot:'у'},
-         {k:'r', bot:'к'}, {k:'t', bot:'е'}, {k:'y', bot:'н'}, {k:'u', bot:'ш'},
-         {k:'i', bot:'щ'}, {k:'o', bot:'э'}, {k:'p', top:'/', bot:'р'},
-         {k:'bracketL', bot:'( ', top:')'}, {k:'bracketR', bot:'ъ'}],
-        // row2: ф ы в а п р о л д ж е ё
-        [{k:'shiftL', wide:true, bot:'⇧ Shift'}, {k:'a', bot:'ф'}, {k:'s', bot:'ы'},
-         {k:'d', bot:'в'}, {k:'f', bot:'а'}, {k:'g', bot:'п'}, {k:'h', bot:'р'},
-         {k:'j', bot:'о'}, {k:'k', bot:'л'}, {k:'l', bot:'д'},
-          {k:'semi', top:':', bot:'ж'}, {k:'quote', top:'!', bot:'э'}, {k:'backslash', top:'|', bot:'Ё'}],
-         // row3: я ч с м и т ь б ю . ,
-         [{k:'capslock', wide:true, bot:'CapsLock'}, {k:'z', bot:'я'}, {k:'x', bot:'ч'},
-          {k:'c', bot:'с'}, {k:'v', bot:'м'}, {k:'b', bot:'и'}, {k:'n', bot:'т'},
-          {k:'m', bot:'ь'}, {k:'comma', top:'Б', bot:','}, {k:'period', top:'Ю', bot:'.'},
-          {k:'slash', bot:'/'}],
-         [{k:'ctrlL', extraWide:true, bot:'Ctrl'}, {k:'winL', bot:'⊞'}, {k:'altL', bot:'Alt'},
-          {k:'space', space:true, bot:'Пробел'}, {k:'altR', bot:'AltGr'}, {k:'ctrlR', extraWide:true, bot:'Ctrl'}]
-     ],
-     en: [
-         [{k:'1', top:'!', bot:'1'}, {k:'2', top:'@', bot:'2'}, {k:'3', top:'#', bot:'3'},
-          {k:'4', top:'$', bot:'4'}, {k:'5', top:'%', bot:'5'}, {k:'6', top:'^', bot:'6'},
-          {k:'7', top:'&', bot:'7'}, {k:'8', top:'*', bot:'8'}, {k:'9', top:'(', bot:'9'},
-          {k:'0', top:')', bot:'0'}, {k:'minus', top:'_', bot:'-'}, {k:'equals', top:'+', bot:'='}],
-         [{k:'shiftL', wide:true, bot:'⇧ Shift'}, {k:'q', bot:'Q'}, {k:'w', bot:'W'}, {k:'e', bot:'E'},
-          {k:'r', bot:'R'}, {k:'t', bot:'T'}, {k:'y', bot:'Y'}, {k:'u', bot:'U'}, {k:'i', bot:'I'},
-          {k:'o', bot:'O'}, {k:'p', bot:'P'}, {k:'bracketL', top:'{', bot:'['}, {k:'bracketR', top:'}', bot:']'}],
-         [{k:'capslock', wide:true, bot:'CapsLock'}, {k:'a', bot:'A'}, {k:'s', bot:'S'}, {k:'d', bot:'D'},
-         {k:'f', bot:'F'}, {k:'g', bot:'G'}, {k:'h', bot:'H'}, {k:'j', bot:'J'}, {k:'k', bot:'K'},
-         {k:'l', bot:'L'}, {k:'semi', top:':', bot:';'}, {k:'quote', top:'"', bot:"'"}],
-        [{k:'shiftR', wide:true, bot:'⇧ Shift'}, {k:'backslash', top:'|', bot:'\ '},
-         {k:'comma', top:'<', bot:','}, {k:'period', top:'>', bot:'.'}, {k:'slash', top:'?', bot:'/'}],
-        [{k:'ctrlL', extraWide:true, bot:'Ctrl'}, {k:'winL', bot:'⊞'}, {k:'altL', bot:'Alt'},
-         {k:'space', space:true, bot:'Space'}, {k:'altR', bot:'AltGr'}, {k:'ctrlR', extraWide:true, bot:'Ctrl'}]
+        [
+            {k:'esc', u:1, label:'Esc'},
+            {k:'grave', u:1, bot:'ё', top:'Ё'},
+            {k:'1', u:1, bot:'1', top:'!'}, {k:'2', u:1, bot:'2', top:'"'},
+            {k:'3', u:1, bot:'3', top:'№'}, {k:'4', u:1, bot:'4', top:';'},
+            {k:'5', u:1, bot:'5', top:'%'}, {k:'6', u:1, bot:'6', top:':'},
+            {k:'7', u:1, bot:'7', top:'?'}, {k:'8', u:1, bot:'8', top:'*'},
+            {k:'9', u:1, bot:'9', top:'('}, {k:'0', u:1, bot:'0', top:')'},
+            {k:'minus', u:1, bot:'-', top:'_'}, {k:'equals', u:1, bot:'=', top:'+'},
+            {k:'backspace', u:2, label:'⌫'},
+        ],
+        [
+            {k:'tab', u:1.5, label:'Tab ⇥'},
+            {k:'q', u:1, bot:'й', top:'Й'}, {k:'w', u:1, bot:'ц', top:'Ц'},
+            {k:'e', u:1, bot:'у', top:'У'}, {k:'r', u:1, bot:'к', top:'К'},
+            {k:'t', u:1, bot:'е', top:'Е'}, {k:'y', u:1, bot:'н', top:'Н'},
+            {k:'u', u:1, bot:'г', top:'Г'}, {k:'i', u:1, bot:'ш', top:'Ш'},
+            {k:'o', u:1, bot:'щ', top:'Щ'}, {k:'p', u:1, bot:'з', top:'З'},
+            {k:'bracketL', u:1, bot:'х', top:'Х'}, {k:'bracketR', u:1, bot:'ъ', top:'Ъ'},
+            {k:'backslash', u:1.5, bot:'\\', top:'/'},
+        ],
+        [
+            {k:'capslock', u:1.75, label:'CapsLock'},
+            {k:'a', u:1, bot:'ф', top:'Ф'}, {k:'s', u:1, bot:'ы', top:'Ы'},
+            {k:'d', u:1, bot:'в', top:'В'}, {k:'f', u:1, bot:'а', top:'А'},
+            {k:'g', u:1, bot:'п', top:'П'}, {k:'h', u:1, bot:'р', top:'Р'},
+            {k:'j', u:1, bot:'о', top:'О'}, {k:'k', u:1, bot:'л', top:'Л'},
+            {k:'l', u:1, bot:'д', top:'Д'}, {k:'semi', u:1, bot:'ж', top:'Ж'},
+            {k:'quote', u:1, bot:'э', top:'Э'}, {k:'enter', u:2.25, label:'Enter ↵'},
+        ],
+        [
+            {k:'shiftL', u:2.25, label:'⇧ Shift'},
+            {k:'z', u:1, bot:'я', top:'Я'}, {k:'x', u:1, bot:'ч', top:'Ч'},
+            {k:'c', u:1, bot:'с', top:'С'}, {k:'v', u:1, bot:'м', top:'М'},
+            {k:'b', u:1, bot:'и', top:'И'}, {k:'n', u:1, bot:'т', top:'Т'},
+            {k:'m', u:1, bot:'ь', top:'Ь'}, {k:'comma', u:1, bot:'б', top:'Б'},
+            {k:'period', u:1, bot:'ю', top:'Ю'}, {k:'slash', u:1, bot:'.', top:','},
+            {k:'shiftR', u:2.75, label:'⇧ Shift'},
+        ],
+        [
+            {k:'ctrlL', u:1.25, label:'Ctrl'}, {k:'winL', u:1.25, label:'⊞ Win'},
+            {k:'altL', u:1.25, label:'Alt'}, {k:'space', u:6, label:'Пробел'},
+            {k:'altR', u:1.25, label:'Alt'}, {k:'ctrlR', u:1.25, label:'Ctrl'},
+        ],
+    ],
+    en: [
+        [
+            {k:'esc', u:1, label:'Esc'},
+            {k:'grave', u:1, bot:'`', top:'~'},
+            {k:'1', u:1, bot:'1', top:'!'}, {k:'2', u:1, bot:'2', top:'@'},
+            {k:'3', u:1, bot:'3', top:'#'}, {k:'4', u:1, bot:'4', top:'$'},
+            {k:'5', u:1, bot:'5', top:'%'}, {k:'6', u:1, bot:'6', top:'^'},
+            {k:'7', u:1, bot:'7', top:'&'}, {k:'8', u:1, bot:'8', top:'*'},
+            {k:'9', u:1, bot:'9', top:'('}, {k:'0', u:1, bot:'0', top:')'},
+            {k:'minus', u:1, bot:'-', top:'_'}, {k:'equals', u:1, bot:'=', top:'+'},
+            {k:'backspace', u:2, label:'⌫'},
+        ],
+        [
+            {k:'tab', u:1.5, label:'Tab ⇥'},
+            {k:'q', u:1, bot:'q', top:'Q'}, {k:'w', u:1, bot:'w', top:'W'},
+            {k:'e', u:1, bot:'e', top:'E'}, {k:'r', u:1, bot:'r', top:'R'},
+            {k:'t', u:1, bot:'t', top:'T'}, {k:'y', u:1, bot:'y', top:'Y'},
+            {k:'u', u:1, bot:'u', top:'U'}, {k:'i', u:1, bot:'i', top:'I'},
+            {k:'o', u:1, bot:'o', top:'O'}, {k:'p', u:1, bot:'p', top:'P'},
+            {k:'bracketL', u:1, bot:'[', top:'{'}, {k:'bracketR', u:1, bot:']', top:'}'},
+            {k:'backslash', u:1.5, bot:'\\', top:'|'},
+        ],
+        [
+            {k:'capslock', u:1.75, label:'CapsLock'},
+            {k:'a', u:1, bot:'a', top:'A'}, {k:'s', u:1, bot:'s', top:'S'},
+            {k:'d', u:1, bot:'d', top:'D'}, {k:'f', u:1, bot:'f', top:'F'},
+            {k:'g', u:1, bot:'g', top:'G'}, {k:'h', u:1, bot:'h', top:'H'},
+            {k:'j', u:1, bot:'j', top:'J'}, {k:'k', u:1, bot:'k', top:'K'},
+            {k:'l', u:1, bot:'l', top:'L'}, {k:'semi', u:1, bot:';', top:':'},
+            {k:'quote', u:1, bot:"'", top:'"'}, {k:'enter', u:2.25, label:'Enter ↵'},
+        ],
+        [
+            {k:'shiftL', u:2.25, label:'⇧ Shift'},
+            {k:'z', u:1, bot:'z', top:'Z'}, {k:'x', u:1, bot:'x', top:'X'},
+            {k:'c', u:1, bot:'c', top:'C'}, {k:'v', u:1, bot:'v', top:'V'},
+            {k:'b', u:1, bot:'b', top:'B'}, {k:'n', u:1, bot:'n', top:'N'},
+            {k:'m', u:1, bot:'m', top:'M'}, {k:'comma', u:1, bot:',', top:'<'},
+            {k:'period', u:1, bot:'.', top:'>'}, {k:'slash', u:1, bot:'/', top:'?'},
+            {k:'shiftR', u:2.75, label:'⇧ Shift'},
+        ],
+        [
+            {k:'ctrlL', u:1.25, label:'Ctrl'}, {k:'winL', u:1.25, label:'⊞ Win'},
+            {k:'altL', u:1.25, label:'Alt'}, {k:'space', u:6, label:'Space'},
+            {k:'altR', u:1.25, label:'Alt'}, {k:'ctrlR', u:1.25, label:'Ctrl'},
+        ],
     ]
 };
 
-// Полный набор символов для "популярных" кнопок в модалке.
-// Для каждого символа — физическая клавиша и нужен ли Shift.
+// Кнопки-символы сверху модалки. char = что получится, keyId = физическая
+// клавиша, shift = нужен ли зажатый Shift. keyId: null — символ недоступен
+// в этой раскладке.
 const SYMBOL_MAP = {
     ru: [
-        { char: ',', name: 'Запятая', keyId: 'comma', shift: false },
-        { char: '.', name: 'Точка', keyId: 'period', shift: false },
-        { char: ':', name: 'Двоеточие', keyId: 'semi', shift: true },
-        { char: '"', name: 'Двойная кавычка', keyId: 'quote', shift: false },   // Э в RU верхний ряд? Нет, '"' там в q-top
-        { char: "'", name: 'Одинарная кавычка', keyId: 'quote', shift: false }, // RU не имеет отдельной апострофа на quote → совмещаем
-        { char: '(', name: 'Скобка (', keyId: 'bracketL', shift: false },
-        { char: ')', name: 'Скобка )', keyId: 'bracketL', shift: true },
-        { char: '[', name: 'Скобка [', keyId: 'bracketL', shift: false },
-        { char: ']', name: 'Скобка ]', keyId: 'bracketR', shift: false },
-        { char: '=', name: 'Знак равно', keyId: 'equals', shift: false },
-        { char: '+', name: 'Плюс', keyId: 'equals', shift: true },
+        { char: '!', name: 'Восклицательный', keyId: '1', shift: true },
+        { char: '"', name: 'Кавычка', keyId: '2', shift: true },
+        { char: '№', name: 'Знак номера', keyId: '3', shift: true },
+        { char: ';', name: 'Точка с запятой', keyId: '4', shift: true },
+        { char: '%', name: 'Процент', keyId: '5', shift: true },
+        { char: ':', name: 'Двоеточие (словари!)', keyId: '6', shift: true },
+        { char: '?', name: 'Вопросительный', keyId: '7', shift: true },
+        { char: '*', name: 'Звёздочка (умножение)', keyId: '8', shift: true },
+        { char: '(', name: 'Скобка открывающая', keyId: '9', shift: true },
+        { char: ')', name: 'Скобка закрывающая', keyId: '0', shift: true },
         { char: '-', name: 'Минус', keyId: 'minus', shift: false },
-        { char: '*', name: 'Звёздочка', keyId: '8', shift: true },
-        { char: '/', name: 'Слэш', keyId: 'slash', shift: false },
-        { char: '#', name: 'Решётка', keyId: '3', shift: true },
-        { char: '%', name: 'Процент', keyId: '5', shift: true }
+        { char: '_', name: 'Подчёркивание', keyId: 'minus', shift: true },
+        { char: '=', name: 'Равно', keyId: 'equals', shift: false },
+        { char: '+', name: 'Плюс', keyId: 'equals', shift: true },
+        { char: '.', name: 'Точка', keyId: 'slash', shift: false },
+        { char: ',', name: 'Запятая', keyId: 'slash', shift: true },
+        { char: '/', name: 'Слэш (деление)', keyId: 'backslash', shift: true },
+        { char: 'Ё', name: 'Буква Ё', keyId: 'grave', shift: true },
+        { char: "'", name: 'Апостроф — в русской раскладке его нет', keyId: null },
+        { char: '[ ] { }', name: 'Скобки — в русской раскладке их нет', keyId: null }
     ],
     en: [
-        { char: ',', name: 'Comma', keyId: 'comma', shift: false },
-        { char: '.', name: 'Period', keyId: 'period', shift: false },
-        { char: ':', name: 'Colon', keyId: 'semi', shift: true },
-        { char: '"', name: 'Double quote', keyId: 'quote', shift: true },
-        { char: "'", name: 'Single quote', keyId: 'quote', shift: false },
-        { char: '(', name: 'Open paren', keyId: '9', shift: true },
-        { char: ')', name: 'Close paren', keyId: '0', shift: true },
-        { char: '[', name: 'Open bracket', keyId: 'bracketL', shift: false },
-        { char: ']', name: 'Close bracket', keyId: 'bracketR', shift: false },
-        { char: '=', name: 'Equals', keyId: 'equals', shift: false },
-        { char: '+', name: 'Plus', keyId: 'equals', shift: true },
-        { char: '-', name: 'Minus', keyId: 'minus', shift: false },
-        { char: '*', name: 'Asterisk', keyId: '8', shift: true },
-        { char: '/', name: 'Slash', keyId: 'slash', shift: false },
-        { char: '#', name: 'Hash', keyId: '3', shift: true },
-        { char: '%', name: 'Percent', keyId: '5', shift: true }
+        { char: '!', name: 'Восклицательный', keyId: '1', shift: true },
+        { char: '@', name: 'Собака (email)', keyId: '2', shift: true },
+        { char: '#', name: 'Решётка (комментарий!)', keyId: '3', shift: true },
+        { char: '$', name: 'Доллар', keyId: '4', shift: true },
+        { char: '%', name: 'Процент (остаток от деления)', keyId: '5', shift: true },
+        { char: '^', name: 'Крышка', keyId: '6', shift: true },
+        { char: '&', name: 'Амперсанд', keyId: '7', shift: true },
+        { char: '*', name: 'Звёздочка (умножение)', keyId: '8', shift: true },
+        { char: '(', name: 'Скобка открывающая', keyId: '9', shift: true },
+        { char: ')', name: 'Скобка закрывающая', keyId: '0', shift: true },
+        { char: '-', name: 'Минус', keyId: 'minus', shift: false },
+        { char: '_', name: 'Подчёркивание (имена переменных)', keyId: 'minus', shift: true },
+        { char: '=', name: 'Равно', keyId: 'equals', shift: false },
+        { char: '+', name: 'Плюс', keyId: 'equals', shift: true },
+        { char: '[', name: 'Скобка квадратная (списки)', keyId: 'bracketL', shift: false },
+        { char: ']', name: 'Скобка квадратная закрывающая', keyId: 'bracketR', shift: false },
+        { char: '{', name: 'Скобка фигурная (словари)', keyId: 'bracketL', shift: true },
+        { char: '}', name: 'Скобка фигурная закрывающая', keyId: 'bracketR', shift: true },
+        { char: '\\', name: 'Обратный слэш', keyId: 'backslash', shift: false },
+        { char: '|', name: 'Вертикальная черта', keyId: 'backslash', shift: true },
+        { char: ';', name: 'Точка с запятой', keyId: 'semi', shift: false },
+        { char: ':', name: 'Двоеточие (if, def, словари)', keyId: 'semi', shift: true },
+        { char: "'", name: 'Апостроф (строка)', keyId: 'quote', shift: false },
+        { char: '"', name: 'Кавычка (строка)', keyId: 'quote', shift: true },
+        { char: ',', name: 'Запятая', keyId: 'comma', shift: false },
+        { char: '.', name: 'Точка (крап-запятая)', keyId: 'period', shift: false },
+        { char: '/', name: 'Слэш (деление)', keyId: 'slash', shift: false },
+        { char: '?', name: 'Вопросительный', keyId: 'slash', shift: true }
     ]
+};
+
+// Что «умеет» служебная клавиша — показываем, если на ней нет печатаемого символа.
+const SPECIAL_KEY_INFO = {
+    esc:       'Esc — отмена действия, выход из программы.',
+    backspace: 'Backspace — стирает символ слева от курсора.',
+    tab:       'Tab — большой отступ вправо (4 пробела). В Python отступ обязателен!',
+    capslock:  'CapsLock — все буквы становятся заглавными. Python различает регистр!',
+    enter:     'Enter — перенос строки или запуск команды (в turtle: onkey("Return")).',
+    space:     'Пробел — разделяет слова. В turtle: turtle.onkey(step, "space").',
+    shiftL:    'Shift — печатает верхний символ клавиши или заглавную букву.',
+    shiftR:    'Shift — печатает верхний символ клавиши или заглавную букву.',
+    ctrlL:     'Ctrl — сама ничего не печатает, нужна для сочетаний (Ctrl+C — скопировать).',
+    ctrlR:     'Ctrl — сама ничего не печатает, нужна для сочетаний.',
+    altL:      'Alt — для сочетаний (Alt+F4 — закрыть окно).',
+    altR:      'Alt — для сочетаний.',
+    winL:      'Win — открывает меню Пуск.'
 };
 
 function toggleKeyboardPanel() {
@@ -2393,20 +2486,22 @@ function renderKeyboardModal() {
     const chipsEl = document.getElementById('keyboard-symbols');
     const symbols = SYMBOL_MAP[currentKeyLayout];
     chipsEl.innerHTML = symbols.map((s, idx) => `
-        <button onclick="pickSymbol(${idx})" class="kbd-chip ${selectedKeyChar === s.char ? 'kbd-chip-active' : ''}" data-char="${s.char}">
-            ${s.char}<span class="kbd-chip-label">${s.name}</span>
+        <button onclick="pickSymbol(${idx})" class="kbd-chip ${selectedKeyChar === s.char ? 'kbd-chip-active' : ''} ${s.keyId === null ? 'kbd-chip-missing' : ''}" data-char="${escapeHtml(s.char)}">
+            ${escapeHtml(s.char)}<span class="kbd-chip-label">${escapeHtml(s.name)}</span>
         </button>
     `).join('');
 
-    // Визуальная клавиатура
+    // Визуальная клавиатура: одна и та же сетка клавиш в обеих раскладках
     const kbEl = document.getElementById('keyboard-visual');
     const rows = KEYBOARD_ROWS[currentKeyLayout];
     kbEl.innerHTML = rows.map(row => `
         <div class="kb-row">
             ${row.map(k => `
-                <div class="kb-key ${k.wide?'kb-key-wide':''} ${k.extraWide?'kb-key-extra-wide':''} ${k.space?'kb-key-space':''}" data-key="${k.k}">
-                    ${k.top ? `<span class="kb-key-top">${escapeHtml(k.top)}</span>` : ''}
-                    <span class="kb-key-bot">${escapeHtml(k.bot || '')}</span>
+                <div class="kb-key" style="--u:${k.u || 1}" data-key="${k.k}" onclick="pickKey('${k.k}', false)">
+                    <span class="kb-key-top" ${k.top ? `onclick="pickKey('${k.k}', true); event.stopPropagation()"` : ''}>${escapeHtml(k.top || '')}</span>
+                    ${k.bot
+                        ? `<span class="kb-key-bot">${escapeHtml(k.bot)}</span>`
+                        : `<span class="kb-key-label">${escapeHtml(k.label || '')}</span>`}
                 </div>
             `).join('')}
         </div>
@@ -2422,41 +2517,111 @@ function pickSymbol(idx) {
     const symbol = SYMBOL_MAP[currentKeyLayout][idx];
     if (!symbol) return;
     selectedKeyChar = symbol.char;
-    // Обновляем chip active state
-    document.querySelectorAll('#keyboard-symbols .kbd-chip').forEach(chip => {
-        chip.classList.toggle('kbd-chip-active', chip.dataset.char === symbol.char);
-    });
+    syncChips(symbol.char);
     highlightSelectedSymbol();
 }
 
+// Клик прямо по клавише на картинке
+function pickKey(keyId, shifted) {
+    const k = findPhysKey(keyId);
+    if (!k) return;
+    const target = document.querySelector(`.kb-key[data-key="${keyId}"]`);
+    const ch = shifted ? k.top : k.bot;
+
+    // Служебная клавиша (Enter, Tab, Shift, Ctrl, Пробел) — объясняем, что она делает
+    if (!ch) {
+        selectedKeyChar = null;
+        syncChips(null);
+        clearHighlights();
+        if (target) target.classList.add('kb-key-active');
+        showKeyInfo(keyId, SPECIAL_KEY_INFO[keyId] || 'Служебная клавиша — сама ничего не печатает.');
+        return;
+    }
+
+    // Если этот символ есть в списке сверху — подсвечиваем и его чип
+    const sym = SYMBOL_MAP[currentKeyLayout].find(s => s.keyId === keyId && !!s.shift === !!shifted);
+    if (sym) {
+        selectedKeyChar = sym.char;
+        syncChips(sym.char);
+        highlightSelectedSymbol();
+        return;
+    }
+
+    selectedKeyChar = null;
+    syncChips(null);
+    clearHighlights();
+    if (shifted) markShiftHeld();
+    if (target) target.classList.add('kb-key-active');
+
+    const what = /[a-zа-яё]/i.test(ch) ? 'Буква' : 'Символ';
+    showKeyInfo(keyId, shifted
+        ? `${what} «${ch}» — зажми Shift и нажми «${keyLabel(keyId)}».`
+        : `${what} «${ch}» — нажми «${keyLabel(keyId)}» без Shift.`);
+}
+
+function findPhysKey(keyId) {
+    for (const row of KEYBOARD_ROWS[currentKeyLayout]) {
+        const k = row.find(x => x.k === keyId);
+        if (k) return k;
+    }
+    return null;
+}
+
+function syncChips(char) {
+    document.querySelectorAll('#keyboard-symbols .kbd-chip').forEach(chip => {
+        chip.classList.toggle('kbd-chip-active', chip.dataset.char === char);
+    });
+}
+
+function clearHighlights() {
+    document.querySelectorAll('.kb-key').forEach(k => k.classList.remove('kb-key-active', 'kb-key-shift'));
+}
+
+function markShiftHeld() {
+    document.querySelectorAll('.kb-key[data-key="shiftL"], .kb-key[data-key="shiftR"]').forEach(s => s.classList.add('kb-key-shift'));
+}
+
+function showKeyInfo(keyId, text) {
+    document.getElementById('keyboard-result').innerHTML = `
+        <div class="flex flex-col items-center gap-1">
+            <span class="text-sm text-slate-200 font-semibold">${escapeHtml(keyLabel(keyId))}</span>
+            <span class="text-xs text-slate-400 max-w-[520px] text-center">${escapeHtml(text)}</span>
+        </div>
+    `;
+}
+
 function highlightSelectedSymbol() {
+    clearHighlights();
     const sym = SYMBOL_MAP[currentKeyLayout].find(s => s.char === selectedKeyChar);
     if (!sym) return;
 
-    // Сбросить все подсветки
-    document.querySelectorAll('.kb-key').forEach(k => k.classList.remove('kb-key-active', 'kb-key-shift'));
+    const resultEl = document.getElementById('keyboard-result');
 
-    // Подсветить нужную кнопку
-    const target = document.querySelector(`.kb-key[data-key="${sym.keyId}"]`);
-    if (target) target.classList.add('kb-key-active');
-
-    // Если нужен Shift — подсветить оба Shift
-    if (sym.shift) {
-        document.querySelectorAll('.kb-key[data-key="shiftL"], .kb-key[data-key="shiftR"]').forEach(s => s.classList.add('kb-key-shift'));
+    // Символа нет в этой раскладке — так и говорим
+    if (sym.keyId === null) {
+        resultEl.innerHTML = `
+            <div class="flex flex-col items-center gap-2">
+                <span class="font-mono text-rose-300 font-extrabold text-2xl leading-none">${escapeHtml(sym.char)}</span>
+                <span class="text-sm text-slate-300">${escapeHtml(sym.name)}</span>
+                <span class="text-xs text-amber-300">Переключись на раскладку ${currentKeyLayout === 'ru' ? 'English' : 'Русская'} и нажми клавишу с этим знаком.</span>
+            </div>
+        `;
+        return;
     }
 
-    // Показываем результат
-    const resultEl = document.getElementById('keyboard-result');
-    const combo = sym.shift ? `Shift + ${keyLabel(sym.keyId)}` : `${keyLabel(sym.keyId)}`;
+    const target = document.querySelector(`.kb-key[data-key="${sym.keyId}"]`);
+    if (target) target.classList.add('kb-key-active');
+    if (sym.shift) markShiftHeld();
+
     resultEl.innerHTML = `
         <div class="flex flex-col items-center gap-2">
             <div class="flex items-baseline gap-3">
                 <span class="font-mono text-white font-extrabold text-3xl leading-none">${escapeHtml(sym.char)}</span>
-                <span class="text-sm text-slate-300">${sym.name}</span>
+                <span class="text-sm text-slate-300">${escapeHtml(sym.name)}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-indigo-300 font-mono">
                 <span>→</span>
-                <span>${combo}</span>
+                <span>${sym.shift ? 'Shift + ' : ''}${escapeHtml(keyLabel(sym.keyId))}</span>
             </div>
             <div class="text-[11px] text-slate-500">Раскладка: <b class="text-slate-300">${currentKeyLayout === 'ru' ? 'Русская' : 'English'}</b></div>
         </div>
@@ -2464,12 +2629,9 @@ function highlightSelectedSymbol() {
 }
 
 function keyLabel(keyId) {
-    // Ищем человека-читаемую подпись клавиши в текущей раскладке
-    for (const row of KEYBOARD_ROWS[currentKeyLayout]) {
-        const k = row.find(x => x.k === keyId);
-        if (k) return k.bot || k.top || keyId;
-    }
-    return keyId;
+    const k = findPhysKey(keyId);
+    if (!k) return keyId;
+    return k.bot || k.label || k.top || keyId;
 }
 
 function escapeHtml(s) {
