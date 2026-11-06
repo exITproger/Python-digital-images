@@ -1864,12 +1864,19 @@ function toggleFullScreen() {
 
 // Keyboard navigation
 document.addEventListener('keydown', (e) => {
+    // Пока пользователь печатает в поле, горячие клавиши не перехватываем
+    const t = e.target;
+    const isTyping = /^(input|textarea|select)$/i.test(t.tagName) || t.isContentEditable;
+
     // Ctrl+X — переключить режим Cinema 16:9 (скрыть верхнее/нижнее меню)
-    if (e.ctrlKey && (e.key === 'x' || e.key === 'X')) {
+    // e.code = физическая клавиша, поэтому работает и в русской раскладке (там это «ч»)
+    if (e.ctrlKey && !isTyping && (e.code === 'KeyX' || e.key === 'x' || e.key === 'X' || e.key === 'ч' || e.key === 'Ч')) {
         e.preventDefault();
         toggleCinemaMode();
         return;
     }
+
+    if (isTyping) return;
 
     if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault();
