@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админка • Сданные работы</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f8fafc; }
+    h1, h2, h3, .font-display { font-family: 'Comfortaa', cursive; }
+    code, pre { font-family: 'Fira Code', monospace; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #f59e0b55; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f59e0b88; }
+    .card {
+        background: radial-gradient(circle at top right, rgba(30,41,59,.85), rgba(15,23,42,.95));
+        border: 1px solid rgba(255,255,255,.08);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,.7);
+    }
+    select, input { color-scheme: dark; }
+    .toast { animation: toast-in .3s ease; }
+    @keyframes toast-in { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .tab-active { background: rgba(245,158,11,.2) !important; border-color: rgba(245,158,11,.5) !important; color: #fcd34d !important; }
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-amber-950/25 to-slate-900">
+
+<!-- Вход по ключу -->
+<div id="gate" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-sm p-4">
+    <div class="card rounded-3xl p-8 w-full max-w-md text-center">
+        <div class="text-4xl mb-3">🔐</div>
+        <h1 class="font-display font-bold text-xl text-amber-300 mb-1">Админка преподавателя</h1>
+        <p class="text-slate-400 text-sm mb-5">Введи пароль администратора — тот же, что при входе на слайдах. Он сохранится только в этом браузере.</p>
+        <input id="gate-key" type="password" placeholder="Пароль администратора"
+               class="w-full px-4 py-2.5 rounded-xl bg-slate-950/70 border border-white/10 text-sm mb-3 focus:outline-none focus:border-amber-500">
+        <p id="gate-error" class="hidden text-rose-400 text-xs mb-3"></p>
+        <button onclick="tryUnlock()" id="gate-btn" class="w-full px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold transition">Войти</button>
+        <a href="index.html" class="inline-block mt-4 text-xs text-slate-500 hover:text-slate-300">← К слайдам</a>
+    </div>
+</div>
+
+<div id="app" class="max-w-6xl mx-auto px-4 py-6 hidden">
+
+    <header class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl">🗂️</span>
+            <div>
+                <h1 class="font-display font-bold text-xl text-amber-300">Сданные работы</h1>
+                <p class="text-slate-400 text-xs">Данные — в твоей Google-таблице • хранятся, пока ты не удалишь</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <button onclick="loadRecords()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300 text-sm font-semibold transition">🔄 Обновить</button>
+            <button onclick="exportBackup()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300 text-sm font-semibold transition">💾 Резервная копия</button>
+            <button onclick="logoutAdmin()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-400 text-sm font-semibold transition">Выйти</button>
+        </div>
+    </header>
+
+    <!-- Не настроено -->
+    <div id="setup-banner" class="card rounded-3xl p-6 mb-5 hidden border-amber-500/30">
+        <h2 class="font-display font-bold text-lg text-amber-300 mb-2">⚙️ Сначала подключи Google-таблицу</h2>
+        <ol class="list-decimal ml-5 text-sm text-slate-300 space-y-1.5">
+            <li>Создай Google-таблицу → Расширения → Apps Script.</li>
+            <li>Вставь код из файла <code class="text-cyan-300">google-apps-script.gs</code> (лежит в репозитории), придумай и впиши свой ADMIN_KEY.</li>
+            <li>Выполни функцию <code class="text-cyan-300">setupSheet</code>, затем разверни как веб-приложение («Выполнять как: я», «Доступ: все»).</li>
+            <li>Полученный адрес <code class="text-cyan-300">/exec</code> вставь в <code class="text-cyan-300">config.js</code> (поле webAppUrl) и запушь на GitHub.</li>
+        </ol>
+        <p class="text-xs text-slate-500 mt-3">Пока таблица не подключена, можно загружать файлы работ (.json) вручную — кнопка ниже.</p>
+    </div>
+
+    <!-- Сервер не знает пароль -->
+    <div id="key-banner" class="card rounded-3xl p-6 mb-5 hidden border-rose-500/30">
+        <h2 class="font-display font-bold text-lg text-rose-300 mb-2">🔑 Google-скрипт ещё не обновлён</h2>
+        <p class="text-sm text-slate-300 mb-2">Пароль верный, но сервер пока не пускает: в развёрнутом скрипте стоит старый ключ-заглушка. Сделай один раз:</p>
+        <ol class="list-decimal ml-5 text-sm text-slate-300 space-y-1.5">
+            <li>Открой свою Google-таблицу → Расширения → Apps Script.</li>
+            <li>В строке <code class="text-cyan-300">const ADMIN_KEY</code> впиши <code class="text-cyan-300">'qwedsa'</code> (тот же пароль, что на сайте) и сохрани.</li>
+            <li>Развёртывание → Управление развёртываниями → карандаш ✏️ → Версия: <b>Новая версия</b> → Развернуть. Адрес <code class="text-cyan-300">/exec</code> не меняется.</li>
+            <li>Вернись сюда и нажми «🔄 Обновить».</li>
+        </ol>
+        <p class="text-xs text-slate-500 mt-3">Пока сервер не обновлён, работы можно загружать файлами (.json) вручную — кнопка ниже.</p>
+    </div>
+
+    <!-- Статистика -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="card rounded-2xl p-4">
+            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Всего работ</p>
+            <p id="stat-total" class="font-display font-bold text-2xl text-white mt-1">0</p>
+        </div>
+        <div class="card rounded-2xl p-4">
+            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Учеников</p>
+            <p id="stat-students" class="font-display font-bold text-2xl text-cyan-300 mt-1">0</p>
+        </div>
+        <div class="card rounded-2xl p-4">
+            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Зачётов</p>
+            <p id="stat-passed" class="font-display font-bold text-2xl text-emerald-300 mt-1">0</p>
+        </div>
+        <div class="card rounded-2xl p-4">
+            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">На доработку</p>
+            <p id="stat-failed" class="font-display font-bold text-2xl text-rose-300 mt-1">0</p>
+        </div>
+    </div>
+
+    <!-- Вкладки модулей -->
+    <div id="lesson-tabs" class="flex flex-wrap gap-2 mb-4"></div>
+
+    <!-- Импорт файлов -->
+    <div id="drop-zone" class="card rounded-2xl border-2 border-dashed border-white/15 p-4 mb-5 text-center transition cursor-pointer hover:border-amber-500/50">
+        <p class="text-slate-300 text-sm font-semibold">📂 Загрузить файлы работ (.json) — резервная копия со всеми работами одним файлом или отдельные файлы учеников</p>
+        <p class="text-slate-500 text-xs mt-1">Файл-массив работ читается целиком: работы восстановятся в Google-таблицу, а если сервер недоступен — локально в этом браузере. Повторы пропускаются.</p>
+        <input id="file-input" type="file" accept=".json,application/json" multiple class="hidden">
+    </div>
+
+    <!-- Таблица -->
+    <section class="card rounded-3xl p-5 md:p-6 mb-8">
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+            <input id="search" type="text" placeholder="🔍 Поиск по ФИО..."
+                   class="flex-1 min-w-48 px-4 py-2 rounded-xl bg-slate-950/70 border border-white/10 text-sm focus:outline-none focus:border-amber-500">
+            <button onclick="clearAll()" class="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-sm font-semibold transition">🗑 Удалить всё</button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-white/10">
+                        <th class="py-2.5 pr-3">ФИО</th>
+                        <th class="py-2.5 pr-3">Урок</th>
+                        <th class="py-2.5 pr-3">Задание</th>
+                        <th class="py-2.5 pr-3">Тесты</th>
+                        <th class="py-2.5 pr-3">Комментарии</th>
+                        <th class="py-2.5 pr-3">Сдано</th>
+                        <th class="py-2.5 text-right">Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="records-body"></tbody>
+            </table>
+        </div>
+        <p id="empty-msg" class="text-slate-500 text-sm text-center py-8">Пока нет работ.</p>
+        <p id="loading-msg" class="hidden text-amber-300 text-sm text-center py-8">⏳ Загружаю работы из таблицы...</p>
+    </section>
+</div>
+
+<!-- Модалка работы -->
+<div id="modal" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div class="card rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col p-5 md:p-6">
+        <div class="flex items-start justify-between gap-3 mb-3">
+            <div>
+                <h2 id="modal-title" class="font-display font-bold text-lg text-white"></h2>
+                <p id="modal-sub" class="text-xs text-slate-400 mt-0.5"></p>
+            </div>
+            <button onclick="closeModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300 text-sm">✕</button>
+        </div>
+        <div id="modal-checks" class="space-y-1.5 mb-3 max-h-40 overflow-y-auto"></div>
+        <pre id="modal-code" class="flex-1 overflow-auto text-[13px] leading-relaxed bg-[#090d16] border border-white/10 rounded-xl p-4 text-slate-200 whitespace-pre min-h-40"></pre>
+        <div class="flex flex-wrap justify-end gap-2 mt-4">
+            <button id="modal-py" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300 text-sm font-semibold">📥 Код .py</button>
+            <button id="modal-json" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300 text-sm font-semibold">📄 Файл .json</button>
+            <button id="modal-delete" class="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-sm font-semibold">🗑 Удалить работу</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast hidden fixed bottom-5 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl bg-amber-600 text-white text-sm font-bold shadow-2xl z-50"></div>
+
+<script>
+'use strict';
+
+const LESSON_TITLES = { 1: 'Фигуры по очереди', 2: 'Циклы и Узоры', 3: 'Координаты (X, Y)', 4: 'Функции и Random', 5: '16 млн цветов RGB', 6: 'Кнопки и Мышка', 7: 'Гонка Черепашек', 8: 'Финальный Проект 🏆' };
+const KEY_STORE = 'turtle-admin-key';
+const LOCAL_STORE = 'turtle-admin-local';
+const ADMIN_HASH = 'cXdlZHNh'; // base64 пароля администратора — тот же, что на слайдах
+
+function matchesAdminPassword(v) {
+    try { return btoa(v) === ADMIN_HASH; } catch (e) { return false; }
+}
+function isKeyBannerError(msg) { return /не настроил ADMIN_KEY/i.test(String(msg)); }
+
+let records = [];        // из таблицы
+let localRecords = [];   // импортированные вручную (если сервер не настроен)
+let activeLesson = '';
+let modalRecord = null;
+
+function serverUrl() {
+    const u = (window.TURTLE_CONFIG || {}).webAppUrl || '';
+    return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(u) ? u : null;
+}
+function adminKey() { return localStorage.getItem(KEY_STORE) || ''; }
+
+async function api(payload) {
+    const url = serverUrl();
+    if (!url) throw new Error('not-configured');
+    const resp = await fetch(url, { method: 'POST', body: JSON.stringify(Object.assign({ key: adminKey() }, payload)) });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Ошибка сервера');
+    return data;
+}
+
+/* ---------- Вход ---------- */
+async function tryUnlock() {
+    const input = document.getElementById('gate-key');
+    const err = document.getElementById('gate-error');
+    const btn = document.getElementById('gate-btn');
+    err.classList.add('hidden');
+    const val = input.value.trim();
+    if (!matchesAdminPassword(val)) {
+        err.textContent = 'Неверный пароль. Подходит пароль администратора со слайдов.';
+        err.classList.remove('hidden');
+        return;
+    }
+    localStorage.setItem(KEY_STORE, val);
+    if (!serverUrl()) { unlock(); return; }
+    btn.disabled = true; btn.textContent = '⏳ Проверяю...';
+    try {
+        await api({ action: 'list' });
+        unlock();
+    } catch (e) {
+        if (isKeyBannerError(e.message)) {
+            unlock(); // пароль верный, но развёрнутый скрипт ещё не обновлён
+        } else {
+            localStorage.removeItem(KEY_STORE);
+            err.textContent = 'Сервер недоступен: ' + e.message;
+            err.classList.remove('hidden');
+        }
+    }
+    btn.disabled = false; btn.textContent = 'Войти';
+}
+document.getElementById('gate-key').addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+
+function unlock() {
+    document.getElementById('gate').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('setup-banner').classList.toggle('hidden', !!serverUrl());
+    localRecords = getLocal();
+    loadRecords();
+}
+function logoutAdmin() {
+    localStorage.removeItem(KEY_STORE);
+    location.reload();
+}
+if (adminKey() && (!serverUrl() || matchesAdminPassword(adminKey()))) unlock();
+
+/* ---------- Загрузка ---------- */
+async function loadRecords() {
+    if (!serverUrl()) {
+        records = [];
+        document.getElementById('key-banner').classList.add('hidden');
+        render();
+        return;
+    }
+    document.getElementById('loading-msg').classList.remove('hidden');
+    document.getElementById('empty-msg').classList.add('hidden');
+    try {
+        const data = await api({ action: 'list' });
+        records = data.records || [];
+        records.sort((a, b) => String(b.submittedAt).localeCompare(String(a.submittedAt)));
+        document.getElementById('key-banner').classList.add('hidden');
+    } catch (e) {
+        document.getElementById('key-banner').classList.toggle('hidden', !isKeyBannerError(e.message));
+        showToast('Не удалось загрузить: ' + e.message, true);
+    }
+    document.getElementById('loading-msg').classList.add('hidden');
+    render();
+}
+
+function getLocal() {
+    try { return JSON.parse(localStorage.getItem(LOCAL_STORE)) || []; }
+    catch { return []; }
+}
+function saveLocal() { localStorage.setItem(LOCAL_STORE, JSON.stringify(localRecords)); }
+
+function allRecords() {
+    const ids = new Set(records.map(r => r.id));
+    return records.concat(localRecords.filter(r => !ids.has(r.id)));
+}
+
+/* ---------- Вкладки ---------- */
+function renderTabs() {
+    const box = document.getElementById('lesson-tabs');
+    box.innerHTML = '';
+    const all = allRecords();
+    const mk = (value, label, count) => {
+        const b = document.createElement('button');
+        b.className = 'px-3.5 py-1.5 rounded-xl bg-slate-800/70 border border-white/10 text-slate-300 text-xs font-bold transition hover:bg-slate-700' + (String(activeLesson) === String(value) ? ' tab-active' : '');
+        b.textContent = `${label} (${count})`;
+        b.onclick = () => { activeLesson = value; render(); };
+        box.appendChild(b);
+    };
+    mk('', 'Все уроки', all.length);
+    for (let n = 1; n <= 8; n++) mk(n, 'Урок ' + n, all.filter(r => r.lesson === n).length);
+}
+
+/* ---------- Таблица ---------- */
+document.getElementById('search').addEventListener('input', render);
+
+function render() {
+    renderTabs();
+    const all = allRecords();
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    const shown = all.filter(r =>
+        (!q || String(r.name).toLowerCase().includes(q)) &&
+        (!activeLesson || r.lesson === Number(activeLesson)));
+
+    document.getElementById('stat-total').textContent = all.length;
+    document.getElementById('stat-students').textContent = new Set(all.map(r => String(r.name).trim().toLowerCase())).size;
+    document.getElementById('stat-passed').textContent = all.filter(r => isPassed(r)).length;
+    document.getElementById('stat-failed').textContent = all.filter(r => !isPassed(r)).length;
+
+    const body = document.getElementById('records-body');
+    body.innerHTML = '';
+    document.getElementById('empty-msg').classList.toggle('hidden', shown.length > 0);
+    shown.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/[.03] transition align-top';
+        const when = r.submittedAt ? new Date(r.submittedAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+        const passed = isPassed(r);
+        const pc = passedCount(r), total = totalCount(r);
+        const fails = (r.checks || []).filter(c => !c.passed);
+        const commentHtml = fails.length
+            ? `<span class="text-rose-300 text-xs">${fails.length} ошибок(ки):</span><p class="text-xs text-slate-400 mt-0.5 max-w-xs">${escapeHtml(fails.slice(0, 2).map(c => c.label).join('; '))}${fails.length > 2 ? '…' : ''}</p>`
+            : '<span class="text-emerald-400 text-xs">всё выполнено ✓</span>';
+        tr.innerHTML = `
+            <td class="py-3 pr-3 font-semibold text-slate-100">${escapeHtml(r.name)}</td>
+            <td class="py-3 pr-3"><span class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-bold whitespace-nowrap">Урок ${r.lesson}</span></td>
+            <td class="py-3 pr-3 text-slate-300 text-xs max-w-52">${escapeHtml(taskLabel(r))}</td>
+            <td class="py-3 pr-3"><span class="px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap ${passed ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' : 'bg-amber-500/15 border-amber-500/30 text-amber-300'}">${pc} / ${total}</span></td>
+            <td class="py-3 pr-3">${commentHtml}</td>
+            <td class="py-3 pr-3 text-slate-400 text-xs whitespace-nowrap">${when}</td>
+            <td class="py-3 text-right whitespace-nowrap">
+                <button class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300" data-act="view">👁 Код</button>
+                <button class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300" data-act="del">🗑</button>
+            </td>`;
+        tr.querySelector('[data-act=view]').onclick = () => openModal(r);
+        tr.querySelector('[data-act=del]').onclick = () => deleteRecord(r);
+        body.appendChild(tr);
+    });
+}
+
+function taskLabel(r) {
+    return r.taskTitle || r.lessonTitle || LESSON_TITLES[r.lesson] || '';
+}
+function isPassed(r) {
+    if (r.passed != null) return !!r.passed;
+    if (r.result) return r.result === 'зачёт';
+    return totalCount(r) > 0 && passedCount(r) === totalCount(r);
+}
+function passedCount(r) {
+    if (r.passedCount != null) return r.passedCount;
+    return (r.checks || []).filter(c => c.passed).length;
+}
+function totalCount(r) {
+    if (r.total != null) return r.total;
+    return (r.checks || []).length;
+}
+
+/* ---------- Модалка ---------- */
+function openModal(r) {
+    modalRecord = r;
+    document.getElementById('modal-title').textContent = `${r.name} — Урок ${r.lesson}`;
+    const when = r.submittedAt ? new Date(r.submittedAt).toLocaleString('ru-RU') : '';
+    document.getElementById('modal-sub').textContent = `${LESSON_TITLES[r.lesson] || ''} • ${taskLabel(r)} • ${when} • тесты: ${passedCount(r)} / ${totalCount(r)}`;
+    const box = document.getElementById('modal-checks');
+    box.innerHTML = '';
+    (r.checks || []).forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'rounded-lg border px-3 py-1.5 text-xs ' + (c.passed
+            ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
+            : 'bg-rose-500/10 border-rose-500/25 text-rose-300');
+        div.innerHTML = (c.passed ? '✓ ' : '✗ ') + escapeHtml(c.label) + (!c.passed && c.hint ? `<p class="text-slate-400 mt-0.5 ml-4">${escapeHtml(c.hint)}</p>` : '');
+        box.appendChild(div);
+    });
+    document.getElementById('modal-code').textContent = r.code;
+    document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('modal').classList.add('hidden'); modalRecord = null; }
+document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('modal-py').onclick = () => { if (modalRecord) downloadCode(modalRecord); };
+document.getElementById('modal-json').onclick = () => { if (modalRecord) downloadRecord(modalRecord); };
+document.getElementById('modal-delete').onclick = () => { if (modalRecord) { deleteRecord(modalRecord); closeModal(); } };
+
+/* ---------- Действия ---------- */
+async function deleteRecord(r) {
+    if (!confirm(`Удалить работу «${r.name} — Урок ${r.lesson}»?`)) return;
+    try {
+        if (serverUrl() && !String(r.id).startsWith('local|')) await api({ action: 'delete', id: r.id });
+        localRecords = localRecords.filter(x => x.id !== r.id);
+        saveLocal();
+        records = records.filter(x => x.id !== r.id);
+        render();
+        showToast('Работа удалена');
+    } catch (e) { showToast('Не удалось удалить: ' + e.message, true); }
+}
+
+async function clearAll() {
+    const n = allRecords().length;
+    if (!n) { showToast('История и так пуста'); return; }
+    if (!confirm(`Удалить ВСЕ работы (${n} шт.) безвозвратно?`)) return;
+    try {
+        if (serverUrl()) await api({ action: 'clear' });
+        records = [];
+        localRecords = [];
+        saveLocal();
+        render();
+        showToast('Вся история удалена');
+    } catch (e) { showToast('Не удалось удалить: ' + e.message, true); }
+}
+
+/* ---------- Импорт файлов ---------- */
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => { importFiles(fileInput.files); fileInput.value = ''; });
+['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('border-amber-500'); }));
+['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('border-amber-500'); }));
+dropZone.addEventListener('drop', e => importFiles(e.dataTransfer.files));
+
+async function importFiles(fileList) {
+    let added = 0, bad = 0, uploaded = 0;
+    for (const file of fileList) {
+        let data;
+        try { data = JSON.parse(await file.text()); }
+        catch { bad++; continue; }
+        const items = Array.isArray(data) ? data : (Array.isArray(data.records) ? data.records : [data]);
+        for (const item of items) {
+            if (!item || !item.name || !item.lesson || typeof item.code !== 'string') { bad++; continue; }
+            if (!item.id) item.id = 'local|' + file.name + '|' + item.submittedAt;
+            if (allRecords().some(r => r.id === item.id)) continue;
+            if (serverUrl()) {
+                try { await api({ action: 'submit', id: item.id, name: item.name, lesson: item.lesson, lessonTitle: item.lessonTitle, taskId: item.taskId, taskTitle: item.taskTitle, taskTag: item.taskTag, code: item.code, checks: item.checks, submittedAt: item.submittedAt }); uploaded++; continue; }
+                catch (e) { /* сохраняем локально */ }
+            }
+            localRecords.push(item);
+            added++;
+        }
+    }
+    saveLocal();
+    await loadRecords();
+    const parts = [];
+    if (uploaded) parts.push(`в таблицу: ${uploaded}`);
+    if (added) parts.push(`локально: ${added}`);
+    if (bad) parts.push(`не подошло: ${bad}`);
+    showToast(parts.length ? 'Загружено — ' + parts.join(', ') : 'Новых работ в файлах нет', bad > 0 && !uploaded && !added);
+}
+
+/* ---------- Файлы ---------- */
+function downloadBlob(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+function fileBase(r) {
+    const safeName = String(r.name).replace(/[^\wа-яА-ЯёЁ-]+/g, '_').slice(0, 40);
+    const taskPart = r.taskId ? '_' + r.taskId : '';
+    return `Урок${r.lesson}${taskPart}_${safeName}_${String(r.submittedAt || '').slice(0, 10)}`;
+}
+function downloadRecord(r) { downloadBlob(JSON.stringify(r, null, 2), fileBase(r) + '.json', 'application/json'); }
+function downloadCode(r) { downloadBlob(r.code, fileBase(r) + '.py', 'text/x-python'); }
+
+function exportBackup() {
+    const all = allRecords();
+    if (!all.length) { showToast('Нечего сохранять — история пуста', true); return; }
+    downloadBlob(JSON.stringify(all, null, 2), `История_работ_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+    showToast('Резервная копия сохранена');
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+let toastTimer;
+function showToast(msg, isErr) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast fixed bottom-5 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl text-white text-sm font-bold shadow-2xl z-50 ' + (isErr ? 'bg-rose-600' : 'bg-amber-600');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.add('hidden'), 5000);
+}
+</script>
+</body>
+</html>

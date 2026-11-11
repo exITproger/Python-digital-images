@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сдать работу • Python Turtle</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+<script src="config.js"></script>
+<script src="tasks.js"></script>
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f8fafc; }
+    h1, h2, h3, .font-display { font-family: 'Comfortaa', cursive; }
+    code, pre, textarea.code { font-family: 'Fira Code', monospace; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #10b98155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b98188; }
+    .card {
+        background: radial-gradient(circle at top right, rgba(30,41,59,.85), rgba(15,23,42,.95));
+        border: 1px solid rgba(255,255,255,.08);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,.7);
+    }
+    textarea.code {
+        background: #090d16; border: 1px solid #1e293b; color: #e2e8f0;
+        tab-size: 4; line-height: 1.55; resize: vertical;
+    }
+    textarea.code:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
+    .check-item { transition: all .2s; }
+    .check-pass { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.08); }
+    .check-fail { border-color: rgba(244,63,94,.35); background: rgba(244,63,94,.07); }
+    #preview-wrap { overflow: auto; }
+    #preview-canvas { position: relative; width: 600px; height: 440px; margin: 0 auto; background: #fff; border-radius: 12px; flex-shrink: 0; }
+    .toast { animation: toast-in .3s ease; }
+    @keyframes toast-in { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    select, input[type=text] { color-scheme: dark; }
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950/40 to-slate-900">
+
+<div class="max-w-6xl mx-auto px-4 py-6">
+
+    <header class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl">🐢</span>
+            <div>
+                <h1 class="font-display font-bold text-xl text-emerald-300">Сдача работы</h1>
+                <p class="text-slate-400 text-xs">Python Turtle • 8 занятий</p>
+            </div>
+        </div>
+        <a href="index.html" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300 text-sm font-semibold transition">← К слайдам</a>
+    </header>
+
+    <div class="grid lg:grid-cols-2 gap-5">
+
+        <section class="card rounded-3xl p-5 md:p-6">
+            <h2 class="font-display font-bold text-lg mb-4 text-white">1. Заполни и вставь код</h2>
+
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Твоё имя и фамилия</label>
+            <input id="student-name" type="text" placeholder="Например: Маша Иванова"
+                   class="w-full mb-4 px-4 py-2.5 rounded-xl bg-slate-950/70 border border-white/10 text-sm focus:outline-none focus:border-emerald-500">
+
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Шаг 1 • Выбери урок</label>
+            <select id="lesson-select" class="w-full mb-3 px-4 py-2.5 rounded-xl bg-slate-950/70 border border-white/10 text-sm focus:outline-none focus:border-emerald-500"></select>
+
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Шаг 2 • Какое задание сдаёшь?</label>
+            <select id="task-select" class="w-full mb-2 px-4 py-2.5 rounded-xl bg-slate-950/70 border border-white/10 text-sm focus:outline-none focus:border-cyan-500"></select>
+            <div id="task-info" class="mb-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20 px-4 py-3">
+                <p id="task-title" class="text-sm font-bold text-cyan-300"></p>
+                <p id="task-desc" class="text-xs text-slate-400 mt-1 leading-relaxed"></p>
+            </div>
+
+            <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Твой код Python</label>
+                <span class="text-[11px] text-slate-500">пустые строки и отступы не влияют на оценку</span>
+            </div>
+            <textarea id="code-input" class="code w-full h-72 px-4 py-3 rounded-xl text-[13px]" spellcheck="false"
+                      placeholder="import turtle&#10;&#10;t = turtle.Turtle()&#10;..."></textarea>
+
+            <div class="flex flex-wrap gap-2.5 mt-4">
+                <button onclick="runChecks()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition shadow-lg shadow-emerald-900/50">
+                    ✅ Проверить код
+                </button>
+                <button onclick="runPreview()" id="preview-btn" class="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold transition shadow-lg shadow-cyan-900/50">
+                    ▶ Показать рисунок
+                </button>
+            </div>
+        </section>
+
+        <section class="flex flex-col gap-5">
+            <div class="card rounded-3xl p-5 md:p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-display font-bold text-lg text-white">2. Проверка</h2>
+                    <span id="check-score" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 border border-white/10 text-slate-400">ещё не проверялось</span>
+                </div>
+                <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden mb-4">
+                    <div id="check-bar" class="h-full w-0 bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-500"></div>
+                </div>
+                <div id="check-list" class="space-y-2 text-sm">
+                    <p class="text-slate-500 text-sm">Нажми «Проверить код». Я смотрю на структуру программы: циклы, функции, команды. Цвета и размеры могут быть любыми!</p>
+                </div>
+            </div>
+
+            <div class="card rounded-3xl p-5 md:p-6">
+                <h2 class="font-display font-bold text-lg text-white mb-3">3. Твой рисунок</h2>
+                <div id="preview-wrap" class="w-full">
+                    <div id="preview-canvas"></div>
+                </div>
+                <pre id="preview-error" class="hidden mt-3 text-xs text-rose-300 bg-rose-950/40 border border-rose-500/30 rounded-xl p-3 whitespace-pre-wrap"></pre>
+            </div>
+        </section>
+    </div>
+
+    <section class="card rounded-3xl p-5 md:p-6 mt-5">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h2 class="font-display font-bold text-lg text-white">4. Отправь преподавателю</h2>
+                <p id="submit-hint" class="text-sm text-slate-400 mt-1">Сначала нажми «Проверить код». Отчёт уйдёт преподавателю автоматически, даже если что-то не получилось — он увидит, над чем поработать.</p>
+            </div>
+            <button id="submit-btn" onclick="submitWork()" disabled
+                    class="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-bold text-sm transition shadow-lg shadow-emerald-900/50 disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:brightness-110">
+                📨 Отправить работу
+            </button>
+        </div>
+        <p class="text-xs text-slate-500 mt-3">Копия работы также скачается в папку «Загрузки» и останется на твоём компьютере. В истории ниже можно скачать свой код в любой момент.</p>
+    </section>
+
+    <section id="outbox-section" class="card rounded-3xl p-5 md:p-6 mt-5 hidden border-amber-500/30">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="font-display font-bold text-lg text-amber-300">⚠️ Не отправленные работы</h2>
+                <p class="text-sm text-slate-400 mt-1">Интернет пропал? Работы сохранены здесь и на компьютере. Нажми «Отправить ещё раз», когда сеть появится.</p>
+            </div>
+            <button onclick="retryOutbox()" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold transition">🔁 Отправить ещё раз</button>
+        </div>
+        <div id="outbox-list" class="mt-3 space-y-2 text-sm"></div>
+    </section>
+
+    <section class="card rounded-3xl p-5 md:p-6 mt-5 mb-8">
+        <h2 class="font-display font-bold text-lg text-white mb-3">📚 Мои работы</h2>
+        <div id="history-list" class="space-y-2 text-sm"></div>
+    </section>
+</div>
+
+<div id="toast" class="toast hidden fixed bottom-5 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold shadow-2xl z-50"></div>
+
+<script>
+'use strict';
+
+/* Анализатор кода и все задания курса живут в tasks.js */
+
+/* ================= Состояние ================= */
+
+const nameInput = document.getElementById('student-name');
+const lessonSelect = document.getElementById('lesson-select');
+const taskSelect = document.getElementById('task-select');
+const codeInput = document.getElementById('code-input');
+let lastResult = null;
+
+LESSONS.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l.n;
+    opt.textContent = `Урок ${l.n} — ${l.title}`;
+    lessonSelect.appendChild(opt);
+});
+
+nameInput.value = localStorage.getItem('turtle-student-name') || '';
+nameInput.addEventListener('input', () => localStorage.setItem('turtle-student-name', nameInput.value));
+
+function currentLesson() { return LESSONS.find(l => l.n === Number(lessonSelect.value)); }
+function currentTask() {
+    const l = currentLesson();
+    return l.tasks.find(t => t.id === taskSelect.value) || l.tasks[0];
+}
+
+function fillTasks() {
+    const l = currentLesson();
+    const prev = taskSelect.value;
+    taskSelect.innerHTML = '';
+    l.tasks.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.tag} • ${t.title}`;
+        taskSelect.appendChild(opt);
+    });
+    if (l.tasks.some(t => t.id === prev)) taskSelect.value = prev;
+}
+
+function loadDraft() {
+    const t = currentTask();
+    document.getElementById('task-title').textContent = `${t.tag}: ${t.title}`;
+    document.getElementById('task-desc').textContent = t.task;
+    codeInput.value = localStorage.getItem('turtle-draft-' + t.id) || '';
+    resetChecks();
+}
+lessonSelect.addEventListener('change', () => { fillTasks(); loadDraft(); });
+taskSelect.addEventListener('change', loadDraft);
+codeInput.addEventListener('input', () => {
+    localStorage.setItem('turtle-draft-' + currentTask().id, codeInput.value);
+    resetChecks();
+});
+codeInput.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const s = codeInput.selectionStart, ep = codeInput.selectionEnd;
+        codeInput.value = codeInput.value.slice(0, s) + '    ' + codeInput.value.slice(ep);
+        codeInput.selectionStart = codeInput.selectionEnd = s + 4;
+        codeInput.dispatchEvent(new Event('input'));
+    }
+});
+
+function resetChecks() {
+    lastResult = null;
+    document.getElementById('submit-btn').disabled = true;
+    document.getElementById('check-score').textContent = 'ещё не проверялось';
+    document.getElementById('check-score').className = 'text-xs font-bold px-3 py-1 rounded-full bg-slate-800 border border-white/10 text-slate-400';
+    document.getElementById('check-bar').style.width = '0%';
+    document.getElementById('check-list').innerHTML = '<p class="text-slate-500 text-sm">Нажми «Проверить код». Я смотрю на структуру программы: циклы, функции, команды. Цвета и размеры могут быть любыми!</p>';
+}
+
+/* ================= Проверка ================= */
+
+function runChecks() {
+    const task = currentTask();
+    if (!codeInput.value.trim()) { showToast('Сначала вставь свой код 🙂', true); return; }
+    const a = analyze(codeInput.value);
+    const checks = task.checks.map(c => {
+        let passed = false;
+        try { passed = !!c.test(a); } catch (e) { passed = false; }
+        return { label: c.label, hint: c.hint, passed };
+    });
+    const passedCount = checks.filter(c => c.passed).length;
+    const allPassed = passedCount === checks.length;
+    lastResult = { passed: allPassed, passedCount, total: checks.length, checks };
+
+    const list = document.getElementById('check-list');
+    list.innerHTML = '';
+    checks.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'check-item rounded-xl border px-3.5 py-2.5 ' + (c.passed ? 'check-pass' : 'check-fail');
+        div.innerHTML = c.passed
+            ? `<span class="text-emerald-400 font-bold mr-2">✓</span><span class="text-slate-200">${escapeHtml(c.label)}</span>`
+            : `<span class="text-rose-400 font-bold mr-2">✗</span><span class="text-slate-200">${escapeHtml(c.label)}</span><p class="text-xs text-rose-300/80 mt-1 ml-5">${escapeHtml(c.hint)}</p>`;
+        list.appendChild(div);
+    });
+
+    const score = document.getElementById('check-score');
+    score.textContent = `${passedCount} / ${checks.length}` + (allPassed ? ' • ЗАЧЁТ 🎉' : '');
+    score.className = 'text-xs font-bold px-3 py-1 rounded-full border ' + (allPassed
+        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+        : 'bg-amber-500/15 border-amber-500/30 text-amber-300');
+    document.getElementById('check-bar').style.width = (passedCount / checks.length * 100) + '%';
+
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-hint').textContent = allPassed
+        ? 'Отлично! Все пункты выполнены — отправляй работу преподавателю.'
+        : `Пройдено ${passedCount} из ${checks.length}. Можно отправить и так — преподаватель увидит, что нужно доделать.`;
+    if (allPassed) showToast('Проверка пройдена! Можно сдавать 🎉');
+}
+
+/* ================= Предпросмотр (Skulpt) ================= */
+
+function builtinRead(x) {
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles['files'][x] === undefined)
+        throw "File not found: '" + x + "'";
+    return Sk.builtinFiles['files'][x];
+}
+
+let running = false;
+/* В Skulpt часть команд экрана есть только у Screen(), а не у модуля turtle —
+   дописываем их, чтобы код со слайдов работал без изменений.
+   RGB-режим colormode(255) в Skulpt не доходит до черепашек: оборачиваем
+   цветовые методы и переводим числа 0–255 в 0–1 самостоятельно.
+   done()/mainloop() глушим: в браузере окно и так остаётся открытым. */
+const TURTLE_SHIM = [
+    'import turtle as _t',
+    '_s = _t.Screen()',
+    "for _n in ['bgcolor','onscreenclick','onclick','onkey','onkeypress','listen','tracer','update','title','setup','screensize','bye','exitonclick']:",
+    '    if hasattr(_s, _n) and not hasattr(_t, _n): setattr(_t, _n, getattr(_s, _n))',
+    // Skulpt кэширует модуль между запусками: патчим только один раз,
+    // иначе цветовые методы оборачиваются повторно и цвет темнеет.
+    "if not hasattr(_t, '_qfixed'):",
+    '    _M = [1]',
+    '    def _cm(mode=None):',
+    '        if mode is None: return _M[0]',
+    '        _M[0] = 255 if mode == 255 else 1',
+    '        return _M[0]',
+    '    _t.colormode = _cm',
+    '    def _n(v):',
+    '        return v / 255.0 if isinstance(v, (int, float)) else v',
+    '    def _args(a):',
+    '        if _M[0] != 255: return a',
+    '        if len(a) == 1 and isinstance(a[0], (tuple, list)) and len(a[0]) >= 3:',
+    '            return (tuple(_n(v) for v in a[0][:3]),) + a[1:]',
+    '        if len(a) >= 2 and isinstance(a[1], (tuple, list)) and len(a[1]) >= 3:',
+    '            return (a[0], tuple(_n(v) for v in a[1][:3])) + a[2:]',
+    '        if len(a) >= 4 and all(isinstance(v, (int, float)) for v in a[1:4]):',
+    '            return (a[0], _n(a[1]), _n(a[2]), _n(a[3])) + a[4:]',
+    '        if len(a) >= 3 and all(isinstance(v, (int, float)) for v in a[:3]):',
+    '            return (_n(a[0]), _n(a[1]), _n(a[2])) + a[3:]',
+    '        return a',
+    '    _OT = _t.Turtle',
+    '    _op, _of, _oc, _od = _OT.pencolor, _OT.fillcolor, _OT.color, _OT.dot',
+    '    def _pc(self, *a): return _op(self, *_args(a))',
+    '    def _fc(self, *a): return _of(self, *_args(a))',
+    '    def _cc(self, *a): return _oc(self, *_args(a))',
+    '    def _dd(self, *a): return _od(self, *_args(a))',
+    '    _OT.pencolor, _OT.fillcolor, _OT.color, _OT.dot = _pc, _fc, _cc, _dd',
+    '    _OS = _t.Screen',
+    '    _ob = _OS.bgcolor',
+    '    def _bg(self, *a): return _ob(self, *_args(a))',
+    '    _OS.bgcolor = _bg',
+    '    _t.bgcolor = _s.bgcolor',
+    "    _t._qfixed = True",
+    '_t.colormode(1)',
+    '_t.done = lambda: None',
+    '_t.mainloop = lambda: None',
+].join('\n') + '\n';
+const SHIM_LINES = TURTLE_SHIM.split('\n').length - 1;
+
+function runPreview() {
+    if (running) return;
+    const code = codeInput.value;
+    if (!code.trim()) { showToast('Сначала вставь код 🙂', true); return; }
+    const box = document.getElementById('preview-canvas');
+    const errBox = document.getElementById('preview-error');
+    errBox.classList.add('hidden');
+    box.innerHTML = '';
+    running = true;
+    const btn = document.getElementById('preview-btn');
+    btn.disabled = true; btn.textContent = '⏳ Рисую...';
+
+    Sk.configure({
+        output: () => {},
+        read: builtinRead,
+        execLimit: 20000,
+        yieldLimit: 200,
+        __future__: Sk.python3,
+    });
+    Sk.TurtleGraphics = { target: 'preview-canvas', width: 600, height: 440, animate: false };
+
+    Sk.misceval.asyncToPromise(() => Sk.importMainWithBody('<stdin>', false, TURTLE_SHIM + code, true))
+        .then(finishRun)
+        .catch(err => {
+            finishRun();
+            let msg = err.toString ? err.toString() : String(err);
+            msg = msg.replace(/on line (\d+)/g, (m, n) => 'on line ' + Math.max(1, Number(n) - SHIM_LINES));
+            errBox.textContent = 'Ошибка в коде:\n' + msg;
+            errBox.classList.remove('hidden');
+        });
+
+    function finishRun() {
+        running = false;
+        btn.disabled = false; btn.textContent = '▶ Показать рисунок';
+    }
+}
+
+/* ================= Отправка ================= */
+
+function serverUrl() {
+    const u = (window.TURTLE_CONFIG || {}).webAppUrl || '';
+    return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(u) ? u : null;
+}
+
+function makeId() {
+    return (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
+}
+
+async function sendToServer(record) {
+    const url = serverUrl();
+    if (!url) throw new Error('not-configured');
+    const resp = await fetch(url, { method: 'POST', body: JSON.stringify(Object.assign({ action: 'submit' }, record)) });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Сервер отклонил работу');
+    return data;
+}
+
+async function submitWork() {
+    const name = nameInput.value.trim();
+    if (!name) { showToast('Напиши своё имя и фамилию!', true); nameInput.focus(); return; }
+    if (!lastResult) { showToast('Сначала нажми «Проверить код» ✅', true); return; }
+    const lesson = currentLesson();
+    const task = currentTask();
+    const record = {
+        app: 'turtle-homework',
+        version: 3,
+        id: makeId(),
+        name,
+        lesson: lesson.n,
+        lessonTitle: lesson.title,
+        taskId: task.id,
+        taskTitle: task.title,
+        taskTag: task.tag,
+        code: codeInput.value,
+        checks: lastResult.checks,
+        passedCount: lastResult.passedCount,
+        total: lastResult.total,
+        passed: lastResult.passed,
+        submittedAt: new Date().toISOString(),
+    };
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = '⏳ Отправляю...';
+    let sent = false;
+    try {
+        await sendToServer(record);
+        sent = true;
+    } catch (e) {
+        const outbox = getOutbox();
+        outbox.push(record);
+        localStorage.setItem('turtle-outbox', JSON.stringify(outbox));
+        renderOutbox();
+    }
+    btn.disabled = false; btn.textContent = '📨 Отправить работу';
+
+    downloadRecord(record);
+    const history = getHistory();
+    history.unshift(Object.assign({ sent }, record));
+    localStorage.setItem('turtle-my-submissions', JSON.stringify(history.slice(0, 100)));
+    renderHistory();
+
+    if (sent) showToast('Отчёт отправлен преподавателю! Копия — в «Загрузках» 📨');
+    else showToast('Сервер недоступен. Работа сохранена на ПК и в «Не отправленных» — отправь позже 🔁', true);
+}
+
+async function retryOutbox() {
+    const outbox = getOutbox();
+    if (!outbox.length) return;
+    const left = [];
+    let okCount = 0;
+    for (const r of outbox) {
+        try { await sendToServer(r); okCount++; markSent(r.id); }
+        catch (e) { left.push(r); }
+    }
+    localStorage.setItem('turtle-outbox', JSON.stringify(left));
+    renderOutbox();
+    renderHistory();
+    showToast(okCount ? `Отправлено: ${okCount}` + (left.length ? `, осталось: ${left.length}` : '') : 'Сервер всё ещё недоступен', !okCount);
+}
+
+function markSent(id) {
+    const h = getHistory().map(r => r.id === id ? Object.assign({}, r, { sent: true }) : r);
+    localStorage.setItem('turtle-my-submissions', JSON.stringify(h));
+}
+
+function getOutbox() {
+    try { return JSON.parse(localStorage.getItem('turtle-outbox')) || []; }
+    catch { return []; }
+}
+
+function renderOutbox() {
+    const outbox = getOutbox();
+    const section = document.getElementById('outbox-section');
+    section.classList.toggle('hidden', !outbox.length);
+    const box = document.getElementById('outbox-list');
+    box.innerHTML = '';
+    outbox.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'rounded-xl bg-slate-950/60 border border-amber-500/20 px-4 py-2 text-slate-300';
+        div.textContent = `Урок ${r.lesson} • ${r.taskTitle || r.lessonTitle || ''} • ${r.name} • ${new Date(r.submittedAt).toLocaleString('ru-RU')}`;
+        box.appendChild(div);
+    });
+}
+
+/* ================= Файлы и история ================= */
+
+function downloadBlob(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function fileBase(r) {
+    const safeName = String(r.name).replace(/[^\wа-яА-ЯёЁ-]+/g, '_').slice(0, 40);
+    const taskPart = r.taskId ? '_' + r.taskId : '';
+    return `Урок${r.lesson}${taskPart}_${safeName}_${String(r.submittedAt).slice(0, 10)}`;
+}
+
+function downloadRecord(r) {
+    downloadBlob(JSON.stringify(r, null, 2), fileBase(r) + '.json', 'application/json');
+}
+
+function downloadCode(r) {
+    downloadBlob(r.code, fileBase(r) + '.py', 'text/x-python');
+}
+
+function getHistory() {
+    try { return JSON.parse(localStorage.getItem('turtle-my-submissions')) || []; }
+    catch { return []; }
+}
+
+function renderHistory() {
+    const box = document.getElementById('history-list');
+    const history = getHistory();
+    if (!history.length) {
+        box.innerHTML = '<p class="text-slate-500 text-sm">Пока пусто. Сдай первую работу!</p>';
+        return;
+    }
+    box.innerHTML = '';
+    history.forEach(r => {
+        const row = document.createElement('div');
+        row.className = 'flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-950/60 border border-white/5 px-4 py-2.5';
+        const when = new Date(r.submittedAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const score = r.passedCount != null ? `${r.passedCount}/${r.total}` : '';
+        row.innerHTML = `
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-bold">Урок ${r.lesson}</span>
+                <span class="text-slate-300 text-sm">${escapeHtml(r.taskTitle || r.lessonTitle || '')}</span>
+                <span class="text-xs font-bold ${r.passed ? 'text-emerald-300' : 'text-amber-300'}">${score} ${r.passed ? '✓' : ''}</span>
+                <span class="text-xs ${r.sent ? 'text-emerald-400' : 'text-amber-400'}">${r.sent ? 'отправлено' : 'не отправлено'}</span>
+                <span class="text-slate-500 text-xs">${when}</span>
+            </div>
+            <div class="flex gap-2">
+                <button class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300" data-act="py">📥 Код .py</button>
+                <button class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300" data-act="json">📄 Файл .json</button>
+                <button class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300" data-act="del">Удалить</button>
+            </div>`;
+        row.querySelector('[data-act=py]').onclick = () => downloadCode(r);
+        row.querySelector('[data-act=json]').onclick = () => downloadRecord(r);
+        row.querySelector('[data-act=del]').onclick = () => {
+            localStorage.setItem('turtle-my-submissions', JSON.stringify(getHistory().filter(x => x.id !== r.id)));
+            renderHistory();
+        };
+        box.appendChild(row);
+    });
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+let toastTimer;
+function showToast(msg, isErr) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast fixed bottom-5 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl text-white text-sm font-bold shadow-2xl z-50 ' + (isErr ? 'bg-rose-600' : 'bg-emerald-600');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.add('hidden'), 5000);
+}
+
+fillTasks();
+loadDraft();
+renderHistory();
+renderOutbox();
+</script>
+</body>
+</html>

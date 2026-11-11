@@ -168,11 +168,17 @@
 
         <div class="flex items-center gap-3">
             <div id="role-badge" class="px-3 py-1.5 rounded-xl text-xs font-bold hidden bg-slate-800 border border-white/10 text-slate-400"></div>
+            <a href="submit.html" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1.5" title="Проверить код и сдать работу преподавателю">
+                📤 Сдать работу
+            </a>
             <button onclick="toggleLoginModal()" id="login-btn" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center gap-1.5">
                 🔑 Вход
             </button>
             <button onclick="toggleAdminToolbar()" id="admin-toolbar-btn" class="hidden px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold border border-amber-500/30 transition flex items-center gap-1.5">
                 ✏️ Режим правки
+            </button>
+            <button onclick="openAdminWorks()" id="admin-works-btn" class="hidden px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold transition flex items-center gap-1.5" title="Сданные работы учеников">
+                🗂️ Работы учеников
             </button>
             <button onclick="toggleKeyboardPanel()" id="keyboard-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-white/10 transition flex items-center gap-1.5" title="Панель символов">
                 ⌨️
@@ -1965,6 +1971,7 @@ function updateRoleUI() {
     const badge = document.getElementById('role-badge');
     const loginBtn = document.getElementById('login-btn');
     const adminBtn = document.getElementById('admin-toolbar-btn');
+    const worksBtn = document.getElementById('admin-works-btn');
     const logoutBtn = document.getElementById('logout-btn');
 
     if (currentRole === 'admin') {
@@ -1973,6 +1980,7 @@ function updateRoleUI() {
         badge.classList.remove('hidden');
         loginBtn.classList.add('hidden');
         adminBtn.classList.remove('hidden');
+        worksBtn.classList.remove('hidden');
         logoutBtn.classList.remove('hidden');
     } else if (currentRole === 'user') {
         badge.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300';
@@ -1980,13 +1988,20 @@ function updateRoleUI() {
         badge.classList.remove('hidden');
         loginBtn.classList.add('hidden');
         adminBtn.classList.add('hidden');
+        worksBtn.classList.add('hidden');
         logoutBtn.classList.remove('hidden');
     } else {
         badge.classList.add('hidden');
         loginBtn.classList.remove('hidden');
         adminBtn.classList.add('hidden');
+        worksBtn.classList.add('hidden');
         logoutBtn.classList.add('hidden');
     }
+}
+
+function openAdminWorks() {
+    localStorage.setItem('turtle-admin-key', atob(ADMIN_PASSWORD_HASH));
+    location.href = 'admin.html';
 }
 
 function toggleAdminToolbar() {
