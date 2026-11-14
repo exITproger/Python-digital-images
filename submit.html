@@ -124,7 +124,7 @@
                 📨 Отправить работу
             </button>
         </div>
-        <p class="text-xs text-slate-500 mt-3">Копия работы также скачается в папку «Загрузки» и останется на твоём компьютере. В истории ниже можно скачать свой код в любой момент.</p>
+        <p class="text-xs text-slate-500 mt-3">В истории ниже можно скачать свой код (.py) или файл работы (.json) в любой момент.</p>
     </section>
 
     <section id="outbox-section" class="card rounded-3xl p-5 md:p-6 mt-5 hidden border-amber-500/30">
@@ -415,14 +415,13 @@ async function submitWork() {
     }
     btn.disabled = false; btn.textContent = '📨 Отправить работу';
 
-    downloadRecord(record);
     const history = getHistory();
     history.unshift(Object.assign({ sent }, record));
     localStorage.setItem('turtle-my-submissions', JSON.stringify(history.slice(0, 100)));
     renderHistory();
 
-    if (sent) showToast('Отчёт отправлен преподавателю! Копия — в «Загрузках» 📨');
-    else showToast('Сервер недоступен. Работа сохранена на ПК и в «Не отправленных» — отправь позже 🔁', true);
+    if (sent) showToast('Отчёт отправлен преподавателю! 📨');
+    else showToast('Сервер недоступен. Работа сохранена в «Не отправленных» — отправь позже 🔁', true);
 }
 
 async function retryOutbox() {
